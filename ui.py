@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import filedialog as fd
 
 objectives_options = ('1', '2', '3', '4')
 
@@ -29,7 +30,7 @@ def generate():
 
 root = Tk()
 root.title("Graph Generator")
-root.geometry("700x400")
+root.geometry("550x500")
 
 img = PhotoImage(file="1.png")
 img1 = img.subsample(2, 2)
