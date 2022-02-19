@@ -5,10 +5,9 @@ import tkinter.messagebox
 import adapter
 
 objectives_options = ('1', '2', '3', '4', '5')
-objectives_names = ('obj1', 'obj2', 'obj3', 'obj4', 'obj5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
-                   'Planar Connection', 'Grid Connection', 'Bipartite Graph')
-weights_options = ('Fully Random', 'Computed Value (planar/grid)', 'Other Calculation')
+                   'Grid Connection', 'Bipartite Graph')
+weights_options = ('Fully Random', 'Planar', 'Other Calculation')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 source_directory = "/"
 dest_directory = "/"
@@ -36,6 +35,7 @@ def get_source_directory():
 
 
 def get_dest_directory():
+    global dest_directory
     dest_directory = fd.askdirectory()
     # print(dest_directory)
 
@@ -55,6 +55,102 @@ class GUI:
         self.cb_bidirectional.deselect()
         self.t_queries.delete(0, 'end')
         self.queries.set(queries_options[0])
+
+    # def disable_close(self):
+    #     pass
+
+    def open_edges_method_window(self, method):
+        if method == methods_options[1]:    # Fully Connected Dense Graph - no params
+            return
+
+        self.edges_method_window = Toplevel(self.root)
+        self.edges_method_window.title("Method Params")
+        self.edges_method_window.geometry("280x150")
+        self.edges_method_window.resizable(False, False)
+
+        row = 0
+        Label(self.edges_method_window, text="Insert parameters").grid(row=row, column=0, pady=2, padx=6, columnspan=2,
+                                                                       sticky=W)
+        row += 1
+        if method == methods_options[0]:  # Fully Random
+            Label(self.edges_method_window, text="Choose one from below:").grid(row=row, column=0, padx=6, pady=2,
+                                                                                columnspan=5, sticky=W)
+            row += 1
+
+            self.edges_method_full_rnd = IntVar()
+            self.rb_edges_num = Radiobutton(self.edges_method_window, text="Number of edges", value=0,
+                                            variable=self.edges_method_full_rnd)
+            self.rb_edges_num.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+
+            self.t_edges = Prox(self.edges_method_window, width=12)
+            self.t_edges.grid(row=row, column=1, rowspan=2, padx=2, pady=6, sticky=NW)
+            row += 1
+
+            self.rb_edges_percentage = Radiobutton(self.edges_method_window, text="Percentage (from full graph)",
+                                                   value=1, variable=self.edges_method_full_rnd)
+            self.rb_edges_percentage.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            row += 1
+
+            self.b_set_edges_m1 = Button(self.edges_method_window, text="Set", width=10)
+            self.b_set_edges_m1.grid(row=row, column=1, padx=2, pady=2, sticky=W)
+
+        elif method == methods_options[2]:  # Fully Connected
+            Label(self.edges_method_window, text="Choose one from below:").grid(row=row, column=0, padx=6, pady=2,
+                                                                                columnspan=5, sticky=W)
+            row += 1
+
+            self.edges_method_full_connected = IntVar()
+            self.rb_mst = Radiobutton(self.edges_method_window, text="MST", value=0,
+                                      variable=self.edges_method_full_connected)
+            self.rb_mst.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            row += 1
+
+            self.rb_add_edges = Radiobutton(self.edges_method_window, text="Additional Edges (to MST)", value=1,
+                                            variable=self.edges_method_full_connected)
+            self.rb_add_edges.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            self.t_connection = Prox(self.edges_method_window, width=12)
+            self.t_connection.grid(row=row, column=1, rowspan=2, padx=2, pady=6, sticky=NW)
+            row += 1
+
+            self.b_set_edges_m2 = Button(self.edges_method_window, text="Set", width=10)
+            self.b_set_edges_m2.grid(row=row, column=1, padx=2, pady=2, sticky=W)
+
+        elif method == methods_options[3]:  # Flow Network
+            Label(self.edges_method_window, text="Choose vertices' indexes:").grid(row=row, column=0, padx=6, pady=2,
+                                                                                   columnspan=2, sticky=W)
+            row += 1
+
+            Label(self.edges_method_window, text="Source:").grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            self.t_edge_src = Prox(self.edges_method_window, width=10)
+            self.t_edge_src.grid(row=row, column=1, padx=6, pady=2, sticky=E)
+            row += 1
+
+            Label(self.edges_method_window, text="Destination:").grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            self.t_edge_dst = Prox(self.edges_method_window, width=10)
+            self.t_edge_dst.grid(row=row, column=1, padx=6, pady=2, sticky=E)
+            row += 1
+
+            Label(self.edges_method_window, text="Number of paths:").grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            self.t_edge_paths_num = Prox(self.edges_method_window, width=10)
+            self.t_edge_paths_num.grid(row=row, column=1, padx=6, pady=2, sticky=E)
+
+            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8)
+            self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2)
+
+        elif method == methods_options[5]:  # Bipartite Graph
+            Label(self.edges_method_window, text="Relation between sets of vertices, ").grid(row=row, column=0, padx=6,
+                                                                                             pady=2, columnspan=2,
+                                                                                             sticky=W)
+            row += 1
+
+            Label(self.edges_method_window, text="e.g. 1-1, 1-2:").grid(row=row, column=0, padx=6, pady=2, columnspan=2,
+                                                                        sticky=W)
+            self.t_edge_relation = Text(self.edges_method_window, height=1, width=10)
+            self.t_edge_relation.grid(row=row, column=1, padx=6, pady=2, sticky=E)
+            # row += 1
+
+            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8)
+            self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2, sticky=E)
 
     def save_objectives(self, number):
         num = int(number)
@@ -78,12 +174,9 @@ class GUI:
             tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
                                         parent=self.objectives_window)
 
-    # def disable_close(self):
-    #     pass
-
     def open_objectives_window(self, num):
         self.objectives_window = Toplevel(self.root)
-        self.objectives_window.title("Objectives Ranges")
+        self.objectives_window.title("Objectives")
         win_width = int(num) * 25 + 60
         self.objectives_window.geometry("250x" + str(win_width))
         self.objectives_window.resizable(False, False)
@@ -147,7 +240,9 @@ class GUI:
                                                                                                     sticky=E)
 
     def generate_graph(self):
-        print("Generating...")
+        global dest_directory
+
+        print("[DEBUG] Generating...")
         vertices = ''
         valid_vertices = False
         try:
@@ -161,8 +256,9 @@ class GUI:
             else:
                 valid_vertices = True
         if valid_vertices:
-            if self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-                adapter.temp_testing(vertices, self.bidir.get() == 1)
+            if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
+                adapter.generate_fully_random_graph(vertices, self.bidir.get() == 1, 15, weights_options[0], 0, 20,
+                                                    dest_directory)
             # if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
             #     adapter.fully_random(vertices, 0, self.bidir.get() == 1)
             # elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
@@ -204,7 +300,7 @@ class GUI:
         self.l_objectives.grid(row=row_index, column=0, sticky=W)
 
         self.obj = StringVar(root)
-        self.obj.set('- Choose -')
+        self.obj.set('- Select -')
         self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
         self.om_objectives.config(width=9)
         self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W)
@@ -215,8 +311,9 @@ class GUI:
         self.l_edges_methods.grid(row=row_index, column=0, sticky=W)
 
         self.edges_gen_methods = StringVar(root)
-        self.edges_gen_methods.set(methods_options[0])
-        self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options)
+        self.edges_gen_methods.set('- Select -')
+        self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options,
+                                           command=self.open_edges_method_window)
         self.om_edges_methods.config(width=25)
         self.om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W)
 
