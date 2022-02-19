@@ -49,7 +49,7 @@ class EdgeWithValue:
 
 def fully_random(num_vertices, num_edges):
     edges = set()
-    bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
+    bias = fractions.Fraction(num_edges, num_vertices * (num_vertices - 1))
     while len(edges) != num_edges:
         for i in range(1, num_vertices + 1):
             for j in range(1, num_vertices + 1):
@@ -162,16 +162,13 @@ def gr_input_toString(num_vertices, edges):
     output.append("c\n")
     for edge in edges:
         output.append("a\t" + str(edge.u) + "\t" + str(edge.v) + "\t" + str(edge.weight) + "\n")
-
+    return output
 
 def write_to_file_gr(name, edges):
     # f = open("myfile.gr", "x")
-    try:
-        file1 = open(name + '.gr', 'w')
-        file1.writelines(edges)
-        file1.close()
-    except:
-        print("error")
+    file1 = open(name + ".gr", 'w')
+    file1.writelines(edges)
+    file1.close()
 
 
 def write_to_file_co(name, edges):
