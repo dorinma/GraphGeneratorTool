@@ -73,12 +73,13 @@ def fully_connected(num_vertices, num_edges=None):
     for i in range(0, (len(vertices) - 1)):
         edges.add(Edge(vertices[i], vertices[i+1]))
         edges.add(Edge(vertices[i+1], vertices[i]))
-    if num_edges is not None and num_edges > len(edges):
+    num_of_edges = len(edges)
+    if num_edges is not None:
         bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
-        while len(edges) != num_edges:
+        while len(edges) != num_edges + num_of_edges:
             for i in range(1, num_vertices + 1):
                 for j in range(1, num_vertices + 1):
-                    if i != j and random.random() < bias and len(edges) != num_edges:
+                    if i != j and random.random() < bias and len(edges) != num_edges + num_of_edges:
                         edges.add(Edge(i, j))
     return edges
 
@@ -106,8 +107,9 @@ def flow_network(num_vertices, source_vertex, sink_vertex, num_of_paths):
     return edges
 
 
-def planar_connection(num_vertices, num_edges, max_value):
-    min_value = max_value // 2
+def planar_connection(num_vertices, num_edges, min_value, max_value):
+    if min_value <= max_value // 2:
+        min_value = max_value // 2
     max_value -= 2
     edges = set()
     bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
@@ -133,6 +135,34 @@ def bipartite(num_vertices, num_edges, groupA, groupB):
     while len(edges) != num_edges:
         edges.add(Edge(groupA_ver[random.randint(0, groupA)], groupB_ver[random.randint(0, groupB)]))
     return edges
+
+
+def weights_to_edges_random(edges, min_value, max_value):
+    weighted_edges = set()
+    for edge in edges:
+        value = random.randint(min_value,max_value)
+        weighted_edges.add(EdgeWithValue(edge.u,edge.v,value))
+    return weighted_edges
+
+
+def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
+    weighted_edges = set()
+    for edge in edges:
+        weight_for_one_diff = (max_value - min_value) // num_vertices
+        value = min_value + abs(edge.u - edge.v)*weight_for_one_diff
+        weighted_edges.add(EdgeWithValue(edge.u, edge.v, value))
+    return weighted_edges
+
+
+def gr_input_toString(num_vertices, edges):
+    output = []
+    output.append("c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n")
+    output.append("c\n")
+    output.append("c\tgraph contains " + str(num_vertices) + " nodes and " + str(len(edges)) + " arcs\n")
+    output.append("c\n")
+    for edge in edges:
+        output.append("a\t" + str(edge.u) + "\t" + str(edge.v) + "\t" + str(edge.weight) + "\n")
+
 
 def write_to_file_gr(name, edges):
     # f = open("myfile.gr", "x")
@@ -162,3 +192,4 @@ def write_to_file(name, edges):
         file1.close()
     except:
         print("error")
+
