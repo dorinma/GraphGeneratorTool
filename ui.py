@@ -2,48 +2,18 @@ from tkinter import *
 from tkinter import filedialog as fd
 
 objectives_options = ('1', '2', '3', '4')
-
-methods_options = (
-    'Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network', 'Planar Connection',
-    'Grid Connection', 'Bipartite Graph')
-
+methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
+                   'Planar Connection', 'Grid Connection', 'Bipartite Graph')
 weights_options = ('Fully Random', 'Computed Value (planar/grid)', 'Other Calculation')
-
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
-
 source_directory = "/"
-
 dest_directory = "/"
-
 row_index = 0
-
-
-def clear():
-    t_vertices.delete(1.0, END)
-    obj.set(objectives_options[0])
-    edges_gen_methods.set(methods_options[0])
-    edges_gen_weights.set(weights_options[0])
-    cb_bidirectional.deselect()
-    t_queries.delete(1.0, END)
-    queries.set(queries_options[0])
-
-
-def generate():
-    print("generating")
-
-
-def get_source_directory():
-    source_directory = fd.askdirectory()
-    print(source_directory)
-
-
-def get_dest_directory():
-    dest_directory = fd.askdirectory()
-    print(dest_directory)
 
 
 class Prox(Entry):
     """ AN Entry widget that only accepts digits """
+
     def __init__(self, master=None, **kwargs):
         self.var = StringVar(master)
         self.var.trace('w', self.validate)
@@ -56,111 +26,132 @@ class Prox(Entry):
             self.set(''.join(x for x in value if x.isdigit()))
 
 
-# def get_txt():
-#     l_temp.config(text=t_vertices.get(1.0, END))
+def generate():
+    print("generating")
 
 
-root = Tk()
-root.title("Graph Generator")
-root.geometry("650x410")
+def get_source_directory():
+    source_directory = fd.askdirectory()
+    # print(source_directory)
 
-img = PhotoImage(file="1.png")
-img1 = img.subsample(2, 2)
-c = Canvas(root, bg="black", height=260, width=220)
-c.grid(row=0, column=2, rowspan=7)
-c.create_image(50, 10, image=img1)
 
-l_vertices = Label(root, text="Vertices #")
-l_vertices.grid(row=row_index, column=0, sticky=W)
+def get_dest_directory():
+    dest_directory = fd.askdirectory()
+    # print(dest_directory)
 
-# t_vertices = Text(root, height=1, width=12)
-t_vertices = Prox(root, width=15)
-t_vertices.grid(row=row_index, column=1, padx=8, sticky=W)
 
-row_index += 1
+def inc_row():
+    global row_index
+    row_index += 1
 
-l_objectives = Label(root, text="Objectives #")
-l_objectives.grid(row=row_index, column=0, sticky=W)
 
-obj = StringVar(root)
-obj.set(objectives_options[0])
-om_objectives = OptionMenu(root, obj, *objectives_options)
-om_objectives.config(width=25)
-om_objectives.grid(row=row_index, column=1, padx=8, sticky=W)
+class GUI:
 
-row_index += 1
+    def clear(self):
+        self.t_vertices.delete(0, 'end')
+        self.obj.set(objectives_options[0])
+        self.edges_gen_methods.set(methods_options[0])
+        self.edges_gen_weights.set(weights_options[0])
+        self.cb_bidirectional.deselect()
+        self.t_queries.delete(0, 'end')
+        self.queries.set(queries_options[0])
 
-l_edges_methods = Label(root, text="Edges Generation Method")
-l_edges_methods.grid(row=row_index, column=0, sticky=W)
+    def __init__(self, root):
+        self.root = root
+        self.img = PhotoImage(file="1.png")
+        self.img1 = self.img.subsample(1, 1)
+        self.c = Canvas(root, bg="black", height=370, width=270)
+        self.c.grid(row=0, column=2, rowspan=11, pady=2)
+        self.c.create_image(50, 10, image=self.img1)
 
-edges_gen_methods = StringVar(root)
-edges_gen_methods.set(methods_options[0])
-om_edges_methods = OptionMenu(root, edges_gen_methods, *methods_options)
-om_edges_methods.config(width=25)
-om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.l_vertices = Label(root, text="Vertices #")
+        self.l_vertices.grid(row=row_index, column=0, sticky=W)
 
-row_index += 1
+        self.t_vertices = Prox(root, width=15)
+        self.t_vertices.grid(row=row_index, column=1, padx=8, sticky=W)
 
-l_edges_weights = Label(root, text="Edges Weights")
-l_edges_weights.grid(row=row_index, column=0, sticky=W)
+        inc_row()
 
-edges_gen_weights = StringVar(root)
-edges_gen_weights.set(weights_options[0])
-om_edges_weights = OptionMenu(root, edges_gen_weights, *weights_options)
-om_edges_weights.config(width=25)
-om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.l_objectives = Label(root, text="Objectives #")
+        self.l_objectives.grid(row=row_index, column=0, sticky=W)
 
-row_index += 1
+        self.obj = StringVar(root)
+        self.obj.set(objectives_options[0])
+        self.om_objectives = OptionMenu(root, self.obj, *objectives_options)
+        self.om_objectives.config(width=9)
+        self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W)
 
-cb_bidirectional = Checkbutton(root, text="Bi-directional Graph", onvalue=1, offvalue=0)
-cb_bidirectional.grid(row=row_index, column=0, columnspan=2, sticky=W)
+        inc_row()
 
-row_index += 1
+        self.l_edges_methods = Label(root, text="Edges Generation Method")
+        self.l_edges_methods.grid(row=row_index, column=0, sticky=W)
 
-l_queries = Label(root, text="Queries #")
-l_queries.grid(row=row_index, column=0, sticky=W)
+        self.edges_gen_methods = StringVar(root)
+        self.edges_gen_methods.set(methods_options[0])
+        self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options)
+        self.om_edges_methods.config(width=25)
+        self.om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W)
 
-t_queries = Prox(root, width=15)
-t_queries.grid(row=row_index, column=1, padx=8, sticky=W)
+        inc_row()
 
-row_index += 1
+        self.l_edges_weights = Label(root, text="Edges Weights")
+        self.l_edges_weights.grid(row=row_index, column=0, sticky=W)
 
-l_queries_method = Label(root, text="Queries Generation Method")
-l_queries_method.grid(row=row_index, column=0, sticky=W)
+        self.edges_gen_weights = StringVar(root)
+        self.edges_gen_weights.set(weights_options[0])
+        self.om_edges_weights = OptionMenu(root, self.edges_gen_weights, *weights_options)
+        self.om_edges_weights.config(width=25)
+        self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W)
 
-queries = StringVar(root)
-queries.set(queries_options[0])
-om_queries = OptionMenu(root, queries, *queries_options)
-om_queries.config(width=25)
-om_queries.grid(row=row_index, column=1, padx=8, sticky=W)
+        inc_row()
 
-row_index += 1
+        self.cb_bidirectional = Checkbutton(root, text="Bi-directional Graph", onvalue=1, offvalue=0)
+        self.cb_bidirectional.grid(row=row_index, column=0, columnspan=2, sticky=W)
 
-l_ph1 = Label(root, text='')
-l_ph1.grid(row=row_index, column=0, columnspan=3)
+        inc_row()
 
-row_index += 1
+        self.l_queries = Label(root, text="Queries #")
+        self.l_queries.grid(row=row_index, column=0, sticky=W)
 
-# Buttons
-b_clear = Button(root, text="Clear Form", command=clear)
-b_clear.grid(row=row_index, column=0, padx=8, sticky=W)
+        self.t_queries = Prox(root, width=15)
+        self.t_queries.grid(row=row_index, column=1, padx=8, sticky=W)
 
-b_clear = Button(root, text="Save To", command=get_dest_directory)
-b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+        inc_row()
 
-row_index += 1
+        self.l_queries_method = Label(root, text="Queries Generation Method")
+        self.l_queries_method.grid(row=row_index, column=0, sticky=W)
 
-l_ph2 = Label(root, text='')
-l_ph2.grid(row=row_index, column=0, columnspan=3)
+        self.queries = StringVar(root)
+        self.queries.set(queries_options[0])
+        self.om_queries = OptionMenu(root, self.queries, *queries_options)
+        self.om_queries.config(width=25)
+        self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W)
 
-row_index += 1
+        inc_row()
 
-b_generate = Button(root, text="Generate", command=generate)
-b_generate.grid(row=row_index, column=0, padx=8, sticky=W)
+        self.l_ph1 = Label(root, text='')
+        self.l_ph1.grid(row=row_index, column=0, columnspan=3)
 
-b_clear = Button(root, text="Load From", command=get_source_directory)
-b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+        inc_row()
 
-row_index += 1
+        # Buttons
+        self.b_clear = Button(root, text="Clear Form", command=self.clear, width=9)
+        self.b_clear.grid(row=row_index, column=0, padx=8, sticky=W)
 
-root.mainloop()
+        self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=9)
+        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+
+        inc_row()
+
+        self.l_ph2 = Label(root, text='')
+        self.l_ph2.grid(row=row_index, column=0, columnspan=3)
+
+        inc_row()
+
+        self.b_generate = Button(root, text="Generate", command=generate, width=9)
+        self.b_generate.grid(row=row_index, column=0, padx=8, sticky=W)
+
+        self.b_clear = Button(root, text="Load From", command=get_source_directory, width=9)
+        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+
+        inc_row()
