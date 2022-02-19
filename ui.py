@@ -161,10 +161,12 @@ class GUI:
             else:
                 valid_vertices = True
         if valid_vertices:
-            if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
-                adapter.fully_random(vertices, 0, self.bidir.get() == 1)
-            elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-                adapter.fully_connected_dense_graph(vertices)
+            if self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
+                adapter.temp_testing(vertices, self.bidir.get() == 1)
+            # if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
+            #     adapter.fully_random(vertices, 0, self.bidir.get() == 1)
+            # elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
+            #     adapter.fully_connected_dense_graph(vertices)
 
     def __init__(self, root):
         self.root = root
