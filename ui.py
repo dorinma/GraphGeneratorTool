@@ -31,13 +31,11 @@ class Prox(Entry):
 
 def get_source_directory():
     source_directory = fd.askdirectory()
-    # print(source_directory)
 
 
 def get_dest_directory():
     global dest_directory
-    dest_directory = fd.askdirectory()
-    # print(dest_directory)
+    dest_directory = fd.askdirectory() + "/"
 
 
 def inc_row():
@@ -60,7 +58,7 @@ class GUI:
     #     pass
 
     def open_edges_method_window(self, method):
-        if method == methods_options[1]:    # Fully Connected Dense Graph - no params
+        if method == methods_options[1]:  # Fully Connected Dense Graph - no params
             return
 
         self.edges_method_window = Toplevel(self.root)
@@ -243,6 +241,33 @@ class GUI:
         global dest_directory
 
         print("[DEBUG] Generating...")
+        if self.validate_input():
+            vertices_num = int(self.t_vertices.get())
+            if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
+                adapter.generate_fully_random_graph(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
+                                                    self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
+                                                    self.edges_number)
+            elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
+                adapter.generate_fully_connected_dense_graph(vertices_num, self.t_edge_min.get(),
+                                                             self.t_edge_max.get(), self.bidir.get() == 1,
+                                                             dest_directory, self.edges_gen_methods.get())
+            elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Dense Graph
+                adapter.generate_fully_connected_graph(vertices_num, self.t_edge_min.get(),
+                                                       self.t_edge_max.get(), self.bidir.get() == 1, dest_directory,
+                                                       self.edges_gen_methods.get(), self.edges_number)
+            elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
+                adapter.generate_flow_network(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
+                                              self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
+                                              self.edges_flow_src, self.edges_flow_dst, self.edges_flow_paths)
+            elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
+                adapter.generate_bipartite_graph(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
+                                                 self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
+                                                 self.edges_number, self.edges_bipartite1, self.edges_bipartite2)
+            else:   # Grid / Planar?
+                return
+
+    def validate_input(self):
+        # Vertices number
         vertices = ''
         valid_vertices = False
         try:
@@ -256,13 +281,7 @@ class GUI:
             else:
                 valid_vertices = True
         if valid_vertices:
-            if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
-                adapter.generate_fully_random_graph(vertices, self.bidir.get() == 1, 15, weights_options[0], 0, 20,
-                                                    dest_directory)
-            # if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
-            #     adapter.fully_random(vertices, 0, self.bidir.get() == 1)
-            # elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-            #     adapter.fully_connected_dense_graph(vertices)
+            return True
 
     def __init__(self, root):
         self.root = root
@@ -282,53 +301,71 @@ class GUI:
         self.t_max_o4 = Prox()
         self.t_max_o5 = Prox()
 
+        self.edges_number = 0
+        self.edges_min_val = 0
+        self.edges_max_val = 0
+        self.edges_flow_src = 0
+        self.edges_flow_dst = 0
+        self.edges_flow_paths = 0
+        self.edges_bipartite1 = 0
+        self.edges_bipartite2 = 0
+
         self.img = PhotoImage(file="1.png")
         self.img1 = self.img.subsample(1, 1)
         self.c = Canvas(root, bg="black", height=370, width=270)
-        self.c.grid(row=0, column=2, rowspan=11, pady=2)
+        self.c.grid(row=0, column=3, rowspan=13, pady=2)
         self.c.create_image(50, 10, image=self.img1)
 
-        self.l_vertices = Label(root, text="Vertices #")
-        self.l_vertices.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Vertices #").grid(row=row_index, column=0, sticky=W)
 
         self.t_vertices = Prox(root, width=15)
-        self.t_vertices.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.t_vertices.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_objectives = Label(root, text="Objectives #")
-        self.l_objectives.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Objectives #").grid(row=row_index, column=0, sticky=W)
 
         self.obj = StringVar(root)
         self.obj.set('- Select -')
         self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
         self.om_objectives.config(width=9)
-        self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_edges_methods = Label(root, text="Edges Generation Method")
-        self.l_edges_methods.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Edges Generation Method").grid(row=row_index, column=0, sticky=W)
 
         self.edges_gen_methods = StringVar(root)
         self.edges_gen_methods.set('- Select -')
         self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options,
                                            command=self.open_edges_method_window)
         self.om_edges_methods.config(width=25)
-        self.om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_edges_weights = Label(root, text="Edges Weights")
-        self.l_edges_weights.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Edges Weights").grid(row=row_index, column=0, sticky=W)
 
         self.edges_gen_weights = StringVar(root)
         self.edges_gen_weights.set(weights_options[0])
         self.om_edges_weights = OptionMenu(root, self.edges_gen_weights, *weights_options)
         self.om_edges_weights.config(width=25)
-        self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
+
+        Label(root, text="Min value:").grid(row=row_index, column=1, padx=8, sticky=W)
+        self.t_edge_min = Prox(root, width=12)
+        self.t_edge_min.grid(row=row_index, column=2, padx=8, sticky=E)
+
+        inc_row()
+
+        Label(root, text="Max value:").grid(row=row_index, column=1, padx=8, sticky=W)
+        self.t_edge_max = Prox(root, width=12)
+        self.t_edge_max.grid(row=row_index, column=2, padx=8, sticky=E)
+
+        inc_row()
+
         self.bidir = IntVar()
         self.cb_bidirectional = Checkbutton(root, text="Bi-directional Graph", onvalue=1, offvalue=0,
                                             variable=self.bidir)
@@ -336,27 +373,24 @@ class GUI:
 
         inc_row()
 
-        self.l_queries = Label(root, text="Queries #")
-        self.l_queries.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Queries #").grid(row=row_index, column=0, sticky=W)
 
         self.t_queries = Prox(root, width=15)
-        self.t_queries.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.t_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_queries_method = Label(root, text="Queries Generation Method")
-        self.l_queries_method.grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=W)
 
         self.queries = StringVar(root)
         self.queries.set(queries_options[0])
         self.om_queries = OptionMenu(root, self.queries, *queries_options)
         self.om_queries.config(width=25)
-        self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_ph1 = Label(root, text='')
-        self.l_ph1.grid(row=row_index, column=0, columnspan=3)
+        Label(root, text='').grid(row=row_index, column=0, columnspan=3)
 
         inc_row()
 
@@ -365,12 +399,11 @@ class GUI:
         self.b_clear.grid(row=row_index, column=0, padx=8, sticky=W)
 
         self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=9)
-        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
-        self.l_ph2 = Label(root, text='')
-        self.l_ph2.grid(row=row_index, column=0, columnspan=3)
+        Label(root, text='').grid(row=row_index, column=0, columnspan=3)
 
         inc_row()
 
@@ -378,6 +411,6 @@ class GUI:
         self.b_generate.grid(row=row_index, column=0, padx=8, sticky=W)
 
         self.b_clear = Button(root, text="Load From", command=get_source_directory, width=9)
-        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()

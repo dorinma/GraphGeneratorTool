@@ -71,8 +71,8 @@ def fully_connected(num_vertices, num_edges=None):
     edges = set()
     vertices = random.sample(range(1, num_vertices + 1), num_vertices)
     for i in range(0, (len(vertices) - 1)):
-        edges.add(Edge(vertices[i], vertices[i+1]))
-        edges.add(Edge(vertices[i+1], vertices[i]))
+        edges.add(Edge(vertices[i], vertices[i + 1]))
+        edges.add(Edge(vertices[i + 1], vertices[i]))
     num_of_edges = len(edges)
     if num_edges is not None:
         bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
@@ -125,8 +125,8 @@ def bipartite(num_vertices, num_edges, groupA, groupB):
 def weights_to_edges_random(edges, min_value, max_value):
     weighted_edges = set()
     for edge in edges:
-        value = random.randint(min_value,max_value)
-        weighted_edges.add(EdgeWithValue(edge.u,edge.v,value))
+        value = random.randint(min_value, max_value)
+        weighted_edges.add(EdgeWithValue(edge.u, edge.v, value))
     return weighted_edges
 
 
@@ -145,7 +145,7 @@ def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
     weighted_edges = set()
     for edge in edges:
         weight_for_one_diff = (max_value - min_value) // num_vertices
-        value = min_value + abs(edge.u - edge.v)*weight_for_one_diff
+        value = min_value + abs(edge.u - edge.v) * weight_for_one_diff
         weighted_edges.add(EdgeWithValue(edge.u, edge.v, value))
     return weighted_edges
 
@@ -160,7 +160,7 @@ def query_random(num_vertices, num_pairs):
 
 def query_all_vertices_pairs(num_vertices):
     query = set()
-    for i in range(1,num_vertices + 1):
+    for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
             if i != j:
                 query.add(tuple[i, j])
@@ -172,8 +172,6 @@ def query_toString(pairs):
     for pair in pairs:
         output.append(str(pair[0]) + ", " + str(pair[1]))
     return output
-
-
 
 
 def gr_input_toString(num_vertices, edges):
@@ -200,4 +198,3 @@ def write_to_file(name, edges):
     file1 = open(name, 'w')
     file1.writelines(edges)
     file1.close()
-
