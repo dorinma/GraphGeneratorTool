@@ -5,7 +5,6 @@ import tkinter.messagebox
 import adapter
 
 objectives_options = ('1', '2', '3', '4', '5')
-objectives_names = ('obj1', 'obj2', 'obj3', 'obj4', 'obj5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
 weights_options = ('Fully Random', 'Computed Value (planar/grid)', 'Other Calculation')
@@ -56,6 +55,34 @@ class GUI:
         self.t_queries.delete(0, 'end')
         self.queries.set(queries_options[0])
 
+    # def disable_close(self):
+    #     pass
+
+    def open_edges_method_window(self, method):
+        self.edges_method_window = Toplevel(self.root)
+        self.edges_method_window.title("Params")
+        self.edges_method_window.geometry("250x200")
+        self.edges_method_window.resizable(False, False)
+
+        row = 0
+        Label(self.edges_method_window, text="Insert params:").grid(row=row, column=0, pady=2, columnspan=5)
+        row += 1
+        if method == methods_options[0]:    # Fully Random
+            Label(self.edges_method_window, text="Choose one parameter:").grid(row=row, column=0, pady=2, columnspan=5,
+                                                                               sticky=W)
+            row += 1
+
+            self.cb_edges_num = Checkbutton(self.edges_method_window, text="Number of edges")
+            self.cb_edges_num.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            self.t_edges = Prox(self.edges_method_window, width=10)
+            self.t_edges.grid(row=row, column=1, rowspan=2, sticky=NW)
+            row += 1
+
+            self.cb_edges_percentage = Checkbutton(self.edges_method_window, text="Percentage (from full graph)")
+            self.cb_edges_percentage.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+            row += 1
+
+
     def save_objectives(self, number):
         num = int(number)
         if self.t_min_o1.get() == '' or self.t_max_o1.get() == '':
@@ -78,12 +105,9 @@ class GUI:
             tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
                                         parent=self.objectives_window)
 
-    # def disable_close(self):
-    #     pass
-
     def open_objectives_window(self, num):
         self.objectives_window = Toplevel(self.root)
-        self.objectives_window.title("Objectives Ranges")
+        self.objectives_window.title("Objectives")
         win_width = int(num) * 25 + 60
         self.objectives_window.geometry("250x" + str(win_width))
         self.objectives_window.resizable(False, False)
@@ -204,7 +228,7 @@ class GUI:
         self.l_objectives.grid(row=row_index, column=0, sticky=W)
 
         self.obj = StringVar(root)
-        self.obj.set('- Choose -')
+        self.obj.set('- Select -')
         self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
         self.om_objectives.config(width=9)
         self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W)
@@ -215,8 +239,9 @@ class GUI:
         self.l_edges_methods.grid(row=row_index, column=0, sticky=W)
 
         self.edges_gen_methods = StringVar(root)
-        self.edges_gen_methods.set(methods_options[0])
-        self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options)
+        self.edges_gen_methods.set('- Select -')
+        self.om_edges_methods = OptionMenu(root, self.edges_gen_methods, *methods_options,
+                                           command=self.open_edges_method_window)
         self.om_edges_methods.config(width=25)
         self.om_edges_methods.grid(row=row_index, column=1, padx=8, sticky=W)
 
