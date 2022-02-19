@@ -107,21 +107,6 @@ def flow_network(num_vertices, source_vertex, sink_vertex, num_of_paths):
     return edges
 
 
-def planar_connection(num_vertices, num_edges, min_value, max_value):
-    if min_value <= max_value // 2:
-        min_value = max_value // 2
-    max_value -= 2
-    edges = set()
-    bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
-    while len(edges) != num_edges:
-        for i in range(1, num_vertices + 1):
-            for j in range(1, num_vertices + 1):
-                if i != j and random.random() < bias and len(edges) != num_edges:
-                    value = random.randint(min_value, max_value)
-                    edges.add(EdgeWithValue(i, j, value))
-    return edges
-
-
 def bipartite(num_vertices, num_edges, groupA, groupB):
     groupA = (groupA * num_vertices) // (groupA + groupB)
     groupB = num_vertices - groupA
@@ -145,6 +130,17 @@ def weights_to_edges_random(edges, min_value, max_value):
     return weighted_edges
 
 
+def weights_to_edges_planar_connection(edges, min_value, max_value):
+    if min_value <= max_value // 2:
+        min_value = max_value // 2
+    max_value -= 2
+    weighted_edges = set()
+    for edge in edges:
+        value = random.randint(min_value, max_value)
+        weighted_edges.add(EdgeWithValue(edge.u, edge.v, value))
+    return weighted_edges
+
+
 def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
     weighted_edges = set()
     for edge in edges:
@@ -154,39 +150,54 @@ def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
     return weighted_edges
 
 
-def gr_input_toString(num_vertices, edges):
+def query_random(num_vertices, num_pairs):
+    query = set()
+    while len(query) != num_pairs:
+        pair = random.sample(range(1, num_vertices + 1), 2)
+        query.add(tuple(pair))
+    return query
+
+
+def query_all_vertices_pairs(num_vertices):
+    query = set()
+    for i in range(1,num_vertices + 1):
+        for j in range(1, num_vertices + 1):
+            if i != j:
+                query.add(tuple[i, j])
+    return query
+
+
+def query_toString(pairs):
     output = []
-    output.append("c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n")
-    output.append("c\n")
-    output.append("c\tgraph contains " + str(num_vertices) + " nodes and " + str(len(edges)) + " arcs\n")
-    output.append("c\n")
+    for pair in pairs:
+        output.append(str(pair[0]) + ", " + str(pair[1]))
+    return output
+
+
+
+
+def gr_input_toString(num_vertices, edges):
+    output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
+              "c\tgraph contains " + str(num_vertices) + " nodes and " + str(len(edges)) + " arcs\n", "c\n"]
     for edge in edges:
         output.append("a\t" + str(edge.u) + "\t" + str(edge.v) + "\t" + str(edge.weight) + "\n")
     return output
 
+
 def write_to_file_gr(name, edges):
-    # f = open("myfile.gr", "x")
     file1 = open(name + ".gr", 'w')
     file1.writelines(edges)
     file1.close()
 
 
 def write_to_file_co(name, edges):
-    # f = open("myfile.gr", "x")
-    try:
-        file1 = open(name + '.co', 'w')
-        file1.writelines(edges)
-        file1.close()
-    except:
-        print("error")
+    file1 = open(name + '.co', 'w')
+    file1.writelines(edges)
+    file1.close()
 
 
 def write_to_file(name, edges):
-    # f = open("myfile.gr", "x")
-    try:
-        file1 = open(name, 'w')
-        file1.writelines(edges)
-        file1.close()
-    except:
-        print("error")
+    file1 = open(name, 'w')
+    file1.writelines(edges)
+    file1.close()
 
