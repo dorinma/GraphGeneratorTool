@@ -35,6 +35,7 @@ def get_source_directory():
 
 
 def get_dest_directory():
+    global dest_directory
     dest_directory = fd.askdirectory()
     # print(dest_directory)
 
@@ -239,6 +240,8 @@ class GUI:
                                                                                                     sticky=E)
 
     def generate_graph(self):
+        global dest_directory
+
         print("[DEBUG] Generating...")
         vertices = ''
         valid_vertices = False

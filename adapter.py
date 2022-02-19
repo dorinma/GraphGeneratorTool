@@ -19,7 +19,7 @@ def generate_fully_random_graph(vertices, bi_directed, edges_number, edges_weigh
                                 dest_directory):
     edges = fully_random(vertices, edges_number, bi_directed)
     weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
-    generator.write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
+    generator.write_to_file_gr(dest_directory + "/tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
 def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
