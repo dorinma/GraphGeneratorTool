@@ -2,9 +2,7 @@ import generator
 
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
-
-
-# weights_options = ('Fully Random', 'Computed Value (planar/grid)', 'Other Calculation')
+weights_options = ('Fully Random', 'Planar', 'Other Calculation')
 # queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 
 def temp_testing(num_vertices, bi_directed):
@@ -17,11 +15,20 @@ def temp_testing(num_vertices, bi_directed):
     print("TESTING")
 
 
-def generate_graph(vertices, bi_directed, edged_gen_method, edges_weights, dest_directory):
-    if edges_weights == methods_options[0]:  # Fully Random
-        edges = fully_random(vertices, 10, bi_directed)
-    elif edges_weights == methods_options[0]:  # Fully Connected Dense Graph:
-        edges = fully_connected_dense_graph(vertices, bi_directed)
+def generate_fully_random_graph(vertices, bi_directed, edges_number, edges_weights_method, min_e_val, max_e_val,
+                                dest_directory):
+    edges = fully_random(vertices, edges_number, bi_directed)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    generator.write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
+
+
+def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
+    if method == weights_options[0]:    # Fully Random
+        return generator.weights_to_edges_random(edges, min_e_val, max_e_val)
+    # elif method == weights_options[1]:  # Planar
+    #     return generator.weights_to_edges_planar(edges, min_e_val, max_e_val)
+    else:   # Other calculation
+        return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
 
 
 def fully_random(num_vertices, num_edges, bi_directed):
