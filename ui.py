@@ -72,25 +72,31 @@ class GUI:
         row += 1
         if method == methods_options[0]:  # Fully Random
             Label(self.edges_method_window, text="Choose one from below:").grid(row=row, column=0, padx=6, pady=2,
-                                                                                columnspan=5, sticky=W)
+                                                                                columnspan=3, sticky=W)
             row += 1
 
-            self.edges_method_full_rnd = IntVar()
+            self.edges_method_full_rnd_perc = IntVar()
             self.rb_edges_num = Radiobutton(self.edges_method_window, text="Number of edges", value=0,
-                                            variable=self.edges_method_full_rnd)
+                                            variable=self.edges_method_full_rnd_perc, command=self.rb_num_percentage)
             self.rb_edges_num.grid(row=row, column=0, padx=6, pady=2, sticky=W)
 
-            self.t_edges = Prox(self.edges_method_window, width=12)
-            self.t_edges.grid(row=row, column=1, rowspan=2, padx=2, pady=6, sticky=NW)
+            self.t_edges_number = Prox(self.edges_method_window, width=12)
+            self.t_edges_number.grid(row=row, column=1, padx=2, pady=6, sticky=NW, columnspan=2)
             row += 1
 
             self.rb_edges_percentage = Radiobutton(self.edges_method_window, text="Percentage (from full graph)",
-                                                   value=1, variable=self.edges_method_full_rnd)
+                                                   value=1, variable=self.edges_method_full_rnd_perc,
+                                                   command=self.rb_num_percentage)
             self.rb_edges_percentage.grid(row=row, column=0, padx=6, pady=2, sticky=W)
+
+            self.t_edges_percentage = Prox(self.edges_method_window, width=5, state='readonly')
+            self.t_edges_percentage.grid(row=row, column=1, padx=2, pady=6, sticky=NW)
+            Label(self.edges_method_window, text="%").grid(row=row, column=2, pady=2, sticky=W)
             row += 1
 
-            self.b_set_edges_m1 = Button(self.edges_method_window, text="Set", width=10)
-            self.b_set_edges_m1.grid(row=row, column=1, padx=2, pady=2, sticky=W)
+            self.b_set_edges_m1 = Button(self.edges_method_window, text="Set", width=10,
+                                         command=self.get_fully_random_params)
+            self.b_set_edges_m1.grid(row=row, column=1, padx=2, pady=2, sticky=W, columnspan=2)
 
         elif method == methods_options[2]:  # Fully Connected
             Label(self.edges_method_window, text="Choose one from below:").grid(row=row, column=0, padx=6, pady=2,
@@ -98,19 +104,21 @@ class GUI:
             row += 1
 
             self.edges_method_full_connected = IntVar()
-            self.rb_mst = Radiobutton(self.edges_method_window, text="MST", value=0,
+            self.rb_mst = Radiobutton(self.edges_method_window, text="MST", value=0, command=self.rb_add_edges,
                                       variable=self.edges_method_full_connected)
             self.rb_mst.grid(row=row, column=0, padx=6, pady=2, sticky=W)
             row += 1
 
             self.rb_add_edges = Radiobutton(self.edges_method_window, text="Additional Edges (to MST)", value=1,
-                                            variable=self.edges_method_full_connected)
+                                            variable=self.edges_method_full_connected, command=self.rb_add_edges)
             self.rb_add_edges.grid(row=row, column=0, padx=6, pady=2, sticky=W)
-            self.t_connection = Prox(self.edges_method_window, width=12)
-            self.t_connection.grid(row=row, column=1, rowspan=2, padx=2, pady=6, sticky=NW)
+
+            self.t_add_edges_to_mst = Prox(self.edges_method_window, width=12, state='readonly')
+            self.t_add_edges_to_mst.grid(row=row, column=1, rowspan=2, padx=2, pady=6, sticky=NW)
             row += 1
 
-            self.b_set_edges_m2 = Button(self.edges_method_window, text="Set", width=10)
+            self.b_set_edges_m2 = Button(self.edges_method_window, text="Set", width=10,
+                                         command=self.get_fully_connected_params)
             self.b_set_edges_m2.grid(row=row, column=1, padx=2, pady=2, sticky=W)
 
         elif method == methods_options[3]:  # Flow Network
@@ -132,7 +140,7 @@ class GUI:
             self.t_edge_paths_num = Prox(self.edges_method_window, width=10)
             self.t_edge_paths_num.grid(row=row, column=1, padx=6, pady=2, sticky=E)
 
-            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8)
+            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8, command=self.get_flow_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2)
 
         elif method == methods_options[5]:  # Bipartite Graph
@@ -141,14 +149,30 @@ class GUI:
                                                                                              sticky=W)
             row += 1
 
-            Label(self.edges_method_window, text="e.g. 1-1, 1-2:").grid(row=row, column=0, padx=6, pady=2, columnspan=2,
-                                                                        sticky=W)
+            Label(self.edges_method_window, text="e.g. 1:1, 1:2 -").grid(row=row, column=0, padx=6, pady=2,
+                                                                         columnspan=2,
+                                                                         sticky=W)
             self.t_edge_relation = Text(self.edges_method_window, height=1, width=10)
             self.t_edge_relation.grid(row=row, column=1, padx=6, pady=2, sticky=E)
             # row += 1
 
-            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8)
+            self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8,
+                                         command=self.get_bipartite_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2, sticky=E)
+
+    def rb_add_edges(self):
+        if self.edges_method_full_connected.get() == 1:
+            self.t_add_edges_to_mst.config(state='normal')
+        else:  # MST
+            self.t_add_edges_to_mst.config(state='readonly')
+
+    def rb_num_percentage(self):
+        if self.edges_method_full_rnd_perc.get() == 0:
+            self.t_edges_percentage.config(state='readonly')
+            self.t_edges_number.config(state='normal')
+        else:
+            self.t_edges_percentage.config(state='normal')
+            self.t_edges_number.config(state='readonly')
 
     def save_objectives(self, number):
         num = int(number)
@@ -244,26 +268,23 @@ class GUI:
         if self.validate_input():
             vertices_num = int(self.t_vertices.get())
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
-                adapter.generate_fully_random_graph(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
-                                                    self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
-                                                    self.edges_number)
+                adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1, dest_directory,
+                                                    self.edges_gen_methods.get(), self.edges_number_full_random)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-                adapter.generate_fully_connected_dense_graph(vertices_num, self.t_edge_min.get(),
-                                                             self.t_edge_max.get(), self.bidir.get() == 1,
-                                                             dest_directory, self.edges_gen_methods.get())
-            elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Dense Graph
-                adapter.generate_fully_connected_graph(vertices_num, self.t_edge_min.get(),
-                                                       self.t_edge_max.get(), self.bidir.get() == 1, dest_directory,
-                                                       self.edges_gen_methods.get(), self.edges_number)
+                adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1, dest_directory,
+                                                             self.edges_gen_methods.get())
+            elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
+                adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1, dest_directory,
+                                                       self.edges_gen_methods.get(), self.edges_number_connected)
             elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
-                adapter.generate_flow_network(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
-                                              self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
-                                              self.edges_flow_src, self.edges_flow_dst, self.edges_flow_paths)
+                adapter.generate_flow_network(vertices_num, self.bidir.get() == 1, dest_directory,
+                                              self.edges_gen_methods.get(), self.edges_flow_src, self.edges_flow_dst,
+                                              self.edges_flow_paths)
             elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
-                adapter.generate_bipartite_graph(vertices_num, self.t_edge_min.get(), self.t_edge_max.get(),
-                                                 self.bidir.get() == 1, dest_directory, self.edges_gen_methods.get(),
-                                                 self.edges_number, self.edges_bipartite1, self.edges_bipartite2)
-            else:   # Grid / Planar?
+                adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1, dest_directory,
+                                                 self.edges_gen_methods.get(), self.edges_number_bipartite,
+                                                 self.edges_bipartite1, self.edges_bipartite2)
+            else:  # Grid
                 return
 
     def validate_input(self):
@@ -280,8 +301,70 @@ class GUI:
                 return
             else:
                 valid_vertices = True
-        if valid_vertices:
+        if valid_vertices and self.validate_params():
             return True
+        else:
+            return False
+
+    def validate_params(self):
+        if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random - number/ percentage
+            if self.edges_percentage and (self.edges_percentage_full_random <= 0 or self.edges_percentage_full_random >
+                                          100):
+                return False
+            elif (not self.edges_percentage) and self.edges_number_full_random <= 0:
+                return False
+            return True
+        elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph - add edges/ none
+            if self.edges_method_full_connected.get() == 1 and self.edges_number_connected == 0:  # Additional edges
+                return False
+            else:
+                return True
+        elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network - src, dst, paths #
+            if self.edges_flow_src > 0 and self.edges_flow_dst > 0 and self.edges_flow_paths > 0:
+                return True
+            else:
+                return False
+        elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph - x:y
+            try:
+                values = str(self.edges_bipartite_txt).split(":")
+                if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
+                    self.edges_bipartite1 = int(values[0])
+                    self.edges_bipartite1 = int(values[1])
+                    return True
+            except:
+                return False
+            # t.remove('\n')
+            # print(int(t[0]))
+            # print(int(t[1]))
+            # try:
+            #     values = self.t_edge_relation.get(1.0, END).split(":")
+            #     if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
+            #         return True
+            # except:
+            #     return False
+
+    def get_fully_random_params(self):
+        if self.edges_method_full_rnd_perc.get() == 2:  # percentage
+            self.edges_percentage_full_random = self.t_edges_percentage.get()
+            self.edges_percentage = True
+        else:   # number
+            self.edges_number_full_random = self.t_edges_number.get()
+        self.edges_method_window.destroy()
+
+    def get_fully_connected_params(self):
+        if self.edges_method_full_connected.get() == 1:  # MST + more
+            self.edges_number_connected = self.t_add_edges_to_mst.get()
+        self.edges_method_window.destroy()
+
+    def get_flow_params(self):
+        self.edges_flow_src = self.t_edge_src.get()
+        self.edges_flow_dst = self.t_edge_dst.get()
+        self.edges_flow_paths = self.t_edge_paths_num.get()
+        self.edges_method_window.destroy()
+
+    def get_bipartite_params(self):
+        self.edges_bipartite_txt = self.t_edge_relation.get("1.0", END)
+        self.edges_method_window.destroy()
 
     def __init__(self, root):
         self.root = root
@@ -301,14 +384,18 @@ class GUI:
         self.t_max_o4 = Prox()
         self.t_max_o5 = Prox()
 
-        self.edges_number = 0
-        self.edges_min_val = 0
-        self.edges_max_val = 0
+        self.t_edges_number = Prox()
+        self.edges_number_full_random = 0
+        self.edges_percentage_full_random = 0
+        self.edges_percentage = False
+        self.edges_number_connected = 0
         self.edges_flow_src = 0
         self.edges_flow_dst = 0
         self.edges_flow_paths = 0
         self.edges_bipartite1 = 0
         self.edges_bipartite2 = 0
+        self.edges_bipartite_txt = 0
+        self.edges_number_bipartite = 0
 
         self.img = PhotoImage(file="1.png")
         self.img1 = self.img.subsample(1, 1)
@@ -351,18 +438,6 @@ class GUI:
         self.om_edges_weights = OptionMenu(root, self.edges_gen_weights, *weights_options)
         self.om_edges_weights.config(width=25)
         self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
-
-        inc_row()
-
-        Label(root, text="Min value:").grid(row=row_index, column=1, padx=8, sticky=W)
-        self.t_edge_min = Prox(root, width=12)
-        self.t_edge_min.grid(row=row_index, column=2, padx=8, sticky=E)
-
-        inc_row()
-
-        Label(root, text="Max value:").grid(row=row_index, column=1, padx=8, sticky=W)
-        self.t_edge_max = Prox(root, width=12)
-        self.t_edge_max.grid(row=row_index, column=2, padx=8, sticky=E)
 
         inc_row()
 

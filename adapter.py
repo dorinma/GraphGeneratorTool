@@ -9,47 +9,47 @@ weights_options = ('Fully Random', 'Planar', 'Other Calculation')
 def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
     if method == weights_options[0]:    # Fully Random
         return generator.weights_to_edges_random(edges, min_e_val, max_e_val)
-    # elif method == weights_options[1]:  # Planar
-    #     return generator.weights_to_edges_planar(edges, min_e_val, max_e_val)
+    elif method == weights_options[1]:  # Planar
+        return generator.weights_to_edges_planar_connection(edges, min_e_val, max_e_val)
     else:   # Other calculation
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
 
 
-def generate_fully_random_graph(vertices, min_e_val, max_e_val, bi_directed, dest_directory, edges_weights_method,
+def generate_fully_random_graph(vertices, bi_directed, dest_directory, edges_weights_method,
                                 edges_number):
     edges = fully_random(vertices, edges_number, bi_directed)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory + "tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_fully_connected_dense_graph(vertices, min_e_val, max_e_val, bi_directed, dest_directory,
+def generate_fully_connected_dense_graph(vertices, bi_directed, dest_directory,
                                          edges_weights_method):
     edges = fully_connected_dense_graph(vertices, bi_directed)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory + "tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_fully_connected_graph(vertices, min_e_val, max_e_val, bi_directed, dest_directory, edges_weights_method,
+def generate_fully_connected_graph(vertices, bi_directed, dest_directory, edges_weights_method,
                                    edges_number):
     if edges_number == -1:
         edges = fully_connected(vertices, bi_directed, None)
     else:
         edges = fully_connected(vertices, bi_directed, edges_number)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory + "tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_flow_network(vertices, min_e_val, max_e_val, bi_directed, dest_directory, edges_weights_method,
+def generate_flow_network(vertices, bi_directed, dest_directory, edges_weights_method,
                           source_vertex, sink_vertex, num_of_paths):
     edges = flow_network(vertices, bi_directed, source_vertex, sink_vertex, num_of_paths)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory + "tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_bipartite_graph(vertices, min_e_val, max_e_val, bi_directed, dest_directory, edges_weights_method,
+def generate_bipartite_graph(vertices, bi_directed, dest_directory, edges_weights_method,
                              edges_number, rel1, rel2):
     edges = bipartite(vertices, bi_directed, edges_number, rel1, rel2)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, min_e_val, max_e_val)
+    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory + "tmp", generator.gr_input_toString(vertices, weighted_edges))
 
 
@@ -90,15 +90,3 @@ def bipartite(num_vertices, bi_directed, num_edges, group1, group2):
     if bi_directed:
         edges = generator.change_to_bidirected(edges)
     return edges
-
-
-def write_to_file_gr(name, edges):
-    return 0
-
-
-def write_to_file_co(name, edges):
-    return 0
-
-
-def write_to_file(name, edges):
-    return 0
