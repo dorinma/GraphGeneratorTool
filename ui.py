@@ -202,6 +202,7 @@ class GUI:
         win_width = int(num) * 25 + 60
         self.objectives_window.geometry("250x" + str(win_width))
         self.objectives_window.resizable(False, False)
+        self.objectives_number = num
         # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
 
         row = 0
@@ -268,8 +269,11 @@ class GUI:
         if self.validate_input():
             vertices_num = int(self.t_vertices.get())
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
+                edges_number = self.edges_number_full_random
+                if self.edges_percentage:
+                    edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                    self.edges_gen_methods.get(), self.edges_number_full_random)
+                                                    self.edges_gen_methods.get(), edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1, dest_directory,
                                                              self.edges_gen_methods.get())
@@ -288,23 +292,24 @@ class GUI:
                 return
 
     def validate_input(self):
-        # Vertices number
+        if self.validate_vertices() and self.validate_params() and self.validate_objectives_ranges():
+            return True
+        else:
+            return False
+
+    def validate_vertices(self):
         vertices = ''
-        valid_vertices = False
         try:
             vertices = int(self.t_vertices.get())
         except:
             tkinter.messagebox.showinfo("Invalid Input", "Please insert a valid number of vertices.")
+            return False
         else:
             if vertices <= 0:
                 tkinter.messagebox.showinfo("Invalid Input", "Please insert a valid number of vertices.")
-                return
+                return False
             else:
-                valid_vertices = True
-        if valid_vertices and self.validate_params():
-            return True
-        else:
-            return False
+                return True
 
     def validate_params(self):
         if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random - number/ percentage
@@ -342,13 +347,48 @@ class GUI:
             #         return True
             # except:
             #     return False
+        return False
+    # def validate_objectives_ranges(self):
+    #     valid = [True] * self.objectives_number
+    #     try:
+    #         if self.t_min_o1 != '' and self.t_max_o1 != '':
+    #             self.min_o1 = int(self.t_min_o1.get())
+    #             self.max_o1 = int(self.t_max_o1.get())
+    #             if self.objectives_number > 1:
+    #                 if self.t_min_o2 != '' and self.t_max_o2 != '':
+    #                     self.min_o2 = int(self.t_min_o2.get())
+    #                     self.max_o2 = int(self.t_max_o2.get())
+    #                     if self.objectives_number > 2:
+    #                         if self.t_min_o3 != '' and self.t_max_o3 != '':
+    #                             self.min_o3 = int(self.t_min_o3.get())
+    #                             self.max_o3 = int(self.t_max_o3.get())
+    #                             if self.objectives_number > 3:
+    #                                 if self.t_min_o4 != '' and self.t_max_o4 != '':
+    #                                     self.min_o4 = int(self.t_min_o4.get())
+    #                                     self.max_o4 = int(self.t_max_o4.get())
+    #                                     if self.objectives_number > 4:
+    #                                         if self.t_min_o5 != '' and self.t_max_o5 != '':
+    #                                             self.min_o5 = int(self.t_min_o5.get())
+    #                                             self.max_o5 = int(self.t_max_o5.get())
+    #                                         else:
+    #                                             return False
+    #                                 else:
+    #                                     return False
+    #                         else:
+    #                             return False
+    #                 else:
+    #                     return False
+    #         else:
+    #             return False
+    #     except:
+    #         return False
 
     def get_fully_random_params(self):
-        if self.edges_method_full_rnd_perc.get() == 2:  # percentage
-            self.edges_percentage_full_random = self.t_edges_percentage.get()
+        if self.edges_method_full_rnd_perc.get() == 0:  #
+            self.edges_number_full_random = int(self.t_edges_number.get())
+        else:
+            self.edges_percentage_full_random = int(self.t_edges_percentage.get())
             self.edges_percentage = True
-        else:   # number
-            self.edges_number_full_random = self.t_edges_number.get()
         self.edges_method_window.destroy()
 
     def get_fully_connected_params(self):
@@ -373,18 +413,21 @@ class GUI:
         self.root.resizable(False, False)
 
         # Objectives
+        self.objectives_number = 1
         self.t_min_o1 = Prox()
         self.t_min_o2 = Prox()
         self.t_min_o3 = Prox()
         self.t_min_o4 = Prox()
         self.t_min_o5 = Prox()
+        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = 0, 0, 0, 0, 0
         self.t_max_o1 = Prox()
         self.t_max_o2 = Prox()
         self.t_max_o3 = Prox()
         self.t_max_o4 = Prox()
         self.t_max_o5 = Prox()
+        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = 0, 0, 0, 0, 0
 
-        self.t_edges_number = Prox()
+        # self.t_edges_number = Prox()
         self.edges_number_full_random = 0
         self.edges_percentage_full_random = 0
         self.edges_percentage = False
