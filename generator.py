@@ -1,4 +1,5 @@
 import fractions
+import math
 import random
 
 NUM_VERTICES = 100
@@ -150,6 +151,20 @@ def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
     return weighted_edges
 
 
+def weights_to_edges_coordinate(edges, v_coor_list):
+    v_coor_dict = {}
+    for v in v_coor_list:
+        v_coor_dict[v[0]] = (v[1], v[2], v[3])
+    weighted_edges = set()
+    for edge in edges:
+        u_coor = v_coor_dict[edge.u]
+        v_coor = v_coor_dict[edge.v]
+        distance = math.sqrt(math.pow(u_coor[0] - v_coor[0], 2) + math.pow(u_coor[1] - v_coor[1], 2) +
+                             math.pow(u_coor[2] - v_coor[2], 2))
+        weighted_edges.add(EdgeWithValue(edge.u, edge.v, distance))
+    return weighted_edges
+
+
 def query_random(num_vertices, num_pairs):
     query = set()
     while len(query) != num_pairs:
@@ -174,11 +189,44 @@ def query_toString(pairs):
     return output
 
 
+def gen_coordinate_by_range(num_vertices, long, long_max_diff, lat, lat_max_diff, alt, alt_max_diff):
+    coor_list = []
+    for i in range(1, num_vertices + 1):
+        if i == 1:
+            coor_list.append((i, long, lat, alt))
+        else:
+            long_ = long + random.randint(-1 * long_max_diff, long_max_diff)
+            lat_ = lat + random.randint(-1 * lat_max_diff, lat_max_diff)
+            alt_ = alt + random.randint(-1 * alt_max_diff, alt_max_diff)
+            coor_list.append((i, long_, lat_, alt_))
+    return coor_list
+
+
+def gen_coordinate_by_index(num_vertices, long, long_max_diff, lat, lat_max_diff, alt, alt_max_diff):
+    coor_list = []
+    for i in range(1, num_vertices + 1):
+        long_ = long + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
+        lat_ = lat + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
+        alt_ = alt + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
+        coor_list.append((i, long_, lat_, alt_))
+    return coor_list
+
+
 def gr_input_toString(num_vertices, edges):
     output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
               "c\tgraph contains " + str(num_vertices) + " nodes and " + str(len(edges)) + " arcs\n", "c\n"]
     for edge in edges:
         output.append("a\t" + str(edge.u) + "\t" + str(edge.v) + "\t" + str(edge.weight) + "\n")
+    return output
+
+
+def co_input_toString(v_coor_list):
+    output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
+              "p\taux sp co " + str(len(v_coor_list)) + "\n", "c\tgraph contains " + str(len(v_coor_list)) + " nodes\n",
+              "c\n"]
+    for i in range(0, len(v_coor_list)):
+        output.append("v\t" + str(v_coor_list[i][0]) + "\t" + str(v_coor_list[i][1]) + "\t" + str(v_coor_list[i][2]) +
+                      "\t" + str(v_coor_list[i][3]) + "\n")
     return output
 
 
