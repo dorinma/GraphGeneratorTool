@@ -77,7 +77,7 @@ def fully_connected(num_vertices, num_edges=None):
         edges.add(Edge(vertices[i + 1], vertices[i]))
     num_of_edges = len(edges)
     if num_edges is not None:
-        bias = fractions.Fraction(num_edges, num_vertices * num_vertices)
+        bias = fractions.Fraction(num_edges, num_vertices * num_vertices - 1)
         while len(edges) != num_edges + num_of_edges:
             for i in range(1, num_vertices + 1):
                 for j in range(1, num_vertices + 1):
@@ -175,7 +175,7 @@ def query_random(num_vertices, num_pairs):
     query = set()
     while len(query) != num_pairs:
         pair = random.sample(range(1, num_vertices + 1), 2)
-        query.add(tuple(pair))
+        query.add((pair[0], pair[1]))
     return query
 
 
@@ -184,7 +184,7 @@ def query_all_vertices_pairs(num_vertices):
     for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
             if i != j:
-                query.add(tuple[i, j])
+                query.add((i, j))
     return query
 
 
@@ -196,7 +196,7 @@ def query_pairs_at_least_x(num_vertices, edges, x):
                 neighbors = get_neighbors_dict(edges)
                 paths = allPathsSourceTarget(neighbors, i, j, x)
                 if len(paths) > 0:
-                    query.add(tuple[i, j])
+                    query.add((i, j))
     return query
 
 
