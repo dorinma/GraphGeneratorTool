@@ -5,7 +5,10 @@ methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connect
                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
 weights_options = ('Fully Random', 'Planar', 'Other Calculation')
 # queries_options = ('Random', 'All Pairs', 'Minimal Edges')
-FILE_NAME = "graph_"
+FILE_NAME_GR = "graph_"
+FILE_NAME_Q_RND = "query_random_"
+FILE_NAME_Q_ALL = "query_all_pairs_"
+FILE_NAME_Q_MIN = "query_min_edges_"
 
 
 def get_curr_time():
@@ -22,16 +25,17 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
 
 
 def generate_queries(vertices, edges, queries, dest_directory):
+    time_stamp = str(get_curr_time())
     if queries[0] == 1:  # random
-        generator.write_to_file_query(dest_directory, generator.query_toString(generator.query_random(vertices,
-                                                                                                      queries[1])))
+        generator.write_to_file_query(dest_directory + FILE_NAME_Q_RND + time_stamp,
+                                      generator.query_to_string(generator.query_random(vertices, queries[1])))
     if queries[2] == 1:  # all pairs
-        generator.write_to_file_query(dest_directory,
-                                      generator.query_toString((generator.query_all_vertices_pairs(vertices))))
+        generator.write_to_file_query(dest_directory + FILE_NAME_Q_ALL + time_stamp,
+                                      generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
     if queries[3] == 1:  # min x edges
-        generator.write_to_file_query(dest_directory,
-                                      generator.query_toString((generator.query_pairs_at_least_x(vertices, edges,
-                                                                                                 queries[4]))))
+        generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
+                                      generator.query_to_string((generator.query_pairs_at_least_x(vertices, edges,
+                                                                                                  queries[4]))))
 
 
 def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
@@ -44,7 +48,7 @@ def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weigh
 
 def write_to_files(path, vertices, edges):
     time_stamp = str(get_curr_time())
-    generator.write_to_file_gr(path + FILE_NAME + time_stamp, generator.gr_input_toString(vertices, edges))
+    generator.write_to_file_gr(path + FILE_NAME_GR + time_stamp, generator.gr_input_to_string(vertices, edges))
     # generator.write_to_file_co(path + FILE_NAME + time_stamp, generator.gr_input_toString(vertices, edges))
 
 
@@ -122,4 +126,4 @@ def bipartite(num_vertices, bi_directed, num_edges, group1, group2):
 
 
 def write_to_file_gr(path, edges):
-    generator.write_to_file_gr(path + FILE_NAME + str(get_curr_time()), edges)
+    generator.write_to_file_gr(path + FILE_NAME_GR + str(get_curr_time()), edges)

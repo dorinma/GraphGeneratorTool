@@ -241,8 +241,8 @@ class GUI:
         # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
 
         row = 0
-        Label(self.objectives_window, text="Insert min & max values for each objective:").grid(row=row, column=0,
-                                                                                               pady=2, columnspan=5)
+        Label(self.objectives_window, text="Insert min & max value for each objective:").grid(row=row, column=0,
+                                                                                              pady=2, columnspan=5)
         row += 1
         Label(self.objectives_window, text="#1").grid(row=row, column=0, padx=4, pady=2)
         Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
