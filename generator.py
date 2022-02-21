@@ -109,18 +109,18 @@ def flow_network(num_vertices, source_vertex, sink_vertex, num_of_paths):
     return edges
 
 
-def bipartite(num_vertices, num_edges, groupA, groupB):
-    groupA = (groupA * num_vertices) // (groupA + groupB)
-    groupB = num_vertices - groupA
-    groupA_ver = random.sample(range(1, num_vertices + 1), groupA)
+def bipartite(num_vertices, num_edges, group_a, group_b):
+    group_a = (group_a * num_vertices) // (group_a + group_b)
+    group_b = num_vertices - group_a
+    group_a_ver = random.sample(range(1, num_vertices + 1), group_a)
     all_ver = list(range(1, num_vertices))
-    groupB_ver = []
+    group_b_ver = []
     for v in all_ver:
-        if v not in groupA_ver:
-            groupB_ver.append(v)
+        if v not in group_a_ver:
+            group_b_ver.append(v)
     edges = set()
     while len(edges) != num_edges:
-        edges.add(Edge(groupA_ver[random.randint(0, groupA)], groupB_ver[random.randint(0, groupB)]))
+        edges.add(Edge(group_a_ver[random.randint(0, group_a)], group_b_ver[random.randint(0, group_b)]))
     return edges
 
 
@@ -194,16 +194,19 @@ def query_pairs_at_least_x(num_vertices, edges, x):
         for j in range(1, num_vertices + 1):
             if i != j:
                 neighbors = get_neighbors_dict(edges)
-                paths = allPathsSourceTarget(neighbors, i, j, x)
+                paths = all_paths_source_target(neighbors, i, j, x)
                 if len(paths) > 0:
                     query.add((i, j))
     return query
 
 
-def query_toString(pairs):
+def query_to_string(pairs):
     output = []
-    for pair in pairs:
-        output.append(str(pair[0]) + ", " + str(pair[1]))
+    if len(pairs) == 0:
+        output.append("No such queries.")
+    else:
+        for pair in pairs:
+            output.append(str(pair[0]) + ", " + str(pair[1]) + "\n")
     return output
 
 
@@ -237,15 +240,16 @@ def gen_coordinate_by_index(num_vertices, long, long_max_diff, lat, lat_max_diff
     return coor_list
 
 
-def gr_input_toString(num_vertices, edges):
+def gr_input_to_string(num_vertices, edges):
     output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
+              "p\tsp " + str(num_vertices) + " " + str(len(edges)) + "\n",
               "c\tgraph contains " + str(num_vertices) + " nodes and " + str(len(edges)) + " arcs\n", "c\n"]
     for edge in edges:
         output.append("a\t" + str(edge.u) + "\t" + str(edge.v) + "\t" + str(edge.weight) + "\n")
     return output
 
 
-def co_input_toString(v_coor_list):
+def co_input_to_string(v_coor_list):
     output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
               "p\taux sp co " + str(len(v_coor_list)) + "\n", "c\tgraph contains " + str(len(v_coor_list)) + " nodes\n",
               "c\n"]
@@ -295,17 +299,17 @@ def get_neighbors_dict(edges):
     return neighbors
 
 
-def allPathsSourceTarget(neighbors, s, g, x):
+def all_paths_source_target(neighbors, s, g, x):
     ans = []
     q = deque([(s, [s])])
     while q:
-        curNode, curPath = q.popleft()
-        if curNode == g:
-            if len(curPath) > x:
-                ans.append(curPath)
+        cur_node, cur_path = q.popleft()
+        if cur_node == g:
+            if len(cur_path) > x:
+                ans.append(cur_path)
                 return ans
-        nexts = neighbors[curNode]
+        nexts = neighbors[cur_node]
         for nextNode in nexts:
-            if nextNode not in curPath:
-                q.append((nextNode, curPath + [nextNode]))
+            if nextNode not in cur_path:
+                q.append((nextNode, cur_path + [nextNode]))
     return ans
