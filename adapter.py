@@ -34,8 +34,8 @@ def generate_queries(vertices, edges, queries, dest_directory):
                                       generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
     if queries[3] == 1:  # min x edges
         generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
-                                      generator.query_to_string((generator.query_pairs_at_least_x(vertices, edges,
-                                                                                                  queries[4]))))
+                                      generator.query_to_string((generator.query_pairs_at_least_x_edges(vertices, edges,
+                                                                                                        queries[4]))))
 
 
 def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
