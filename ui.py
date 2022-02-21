@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import filedialog as fd
 import tkinter.messagebox
+import os
 
 import adapter
 
@@ -9,8 +10,7 @@ methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connect
                    'Grid Connection', 'Bipartite Graph')
 weights_options = ('Fully Random', 'Planar', 'Other Calculation')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
-source_directory = "/"
-dest_directory = "/"
+source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
 
 
@@ -265,8 +265,8 @@ class GUI:
     def generate_graph(self):
         global dest_directory
 
-        print("[DEBUG] Generating...")
         if self.validate_input():
+            print("[DEBUG] Generating...")
             vertices_num = int(self.t_vertices.get())
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
                 edges_number = self.edges_number_full_random
@@ -347,8 +347,9 @@ class GUI:
             #         return True
             # except:
             #     return False
-        return False
-    # def validate_objectives_ranges(self):
+
+    def validate_objectives_ranges(self):
+        return True
     #     valid = [True] * self.objectives_number
     #     try:
     #         if self.t_min_o1 != '' and self.t_max_o1 != '':

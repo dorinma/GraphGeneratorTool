@@ -1,0 +1,8 @@
+c	Created in graph generator tool by Shahar Bardugo & Dorin Matzrafi
+c
+c	graph contains 4 nodes and 4 arcs
+c
+a	3	2	0
+a	1	4	0
+a	4	1	0
+a	4	2	0
