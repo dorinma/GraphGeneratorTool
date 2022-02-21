@@ -188,14 +188,26 @@ def query_all_vertices_pairs(num_vertices):
     return query
 
 
-def query_pairs_at_least_x(num_vertices, edges, x):
+def query_pairs_at_least_x_edges(num_vertices, edges, x):
     query = set()
     for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
             if i != j:
                 neighbors = get_neighbors_dict(edges)
-                paths = all_paths_source_target(neighbors, i, j, x)
+                paths = all_paths_source_target_at_least_x(neighbors, i, j, x)
                 if len(paths) > 0:
+                    query.add((i, j))
+    return query
+
+
+def query_pairs_at_least_x_paths(num_vertices, edges, x):
+    query = set()
+    for i in range(1, num_vertices + 1):
+        for j in range(1, num_vertices + 1):
+            if i != j:
+                neighbors = get_neighbors_dict(edges)
+                paths = all_paths_source_target(neighbors, i, j)
+                if len(paths) > x:
                     query.add((i, j))
     return query
 
@@ -299,7 +311,7 @@ def get_neighbors_dict(edges):
     return neighbors
 
 
-def all_paths_source_target(neighbors, s, g, x):
+def all_paths_source_target_at_least_x(neighbors, s, g, x):
     ans = []
     q = deque([(s, [s])])
     while q:
@@ -308,6 +320,20 @@ def all_paths_source_target(neighbors, s, g, x):
             if len(cur_path) > x:
                 ans.append(cur_path)
                 return ans
+        nexts = neighbors[cur_node]
+        for nextNode in nexts:
+            if nextNode not in cur_path:
+                q.append((nextNode, cur_path + [nextNode]))
+    return ans
+
+
+def all_paths_source_target(neighbors, s, g):
+    ans = []
+    q = deque([(s, [s])])
+    while q:
+        cur_node, cur_path = q.popleft()
+        if cur_node == g:
+            ans.append(cur_path)
         nexts = neighbors[cur_node]
         for nextNode in nexts:
             if nextNode not in cur_path:
