@@ -13,19 +13,32 @@ def get_curr_time():
 
 
 def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
-    if method == weights_options[0]:    # Fully Random
+    if method == weights_options[0]:  # Fully Random
         return generator.weights_to_edges_random(edges, min_e_val, max_e_val)
     elif method == weights_options[1]:  # Planar
         return generator.weights_to_edges_planar_connection(edges, min_e_val, max_e_val)
-    else:   # Other calculation
+    else:  # Other calculation
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
 
 
+def generate_queries(vertices, edges, queries, dest_directory):
+    if queries[0] == 1:  # random
+        generator.write_to_file_query(dest_directory, generator.query_toString(generator.query_random(vertices,
+                                                                                                      queries[1])))
+    if queries[2] == 1:  # all pairs
+        generator.write_to_file_query(dest_directory,
+                                      generator.query_toString((generator.query_all_vertices_pairs(vertices))))
+    if queries[3] == 1:  # min x edges
+        generator.write_to_file_query(dest_directory,
+                                      generator.query_toString((generator.query_pairs_at_least_x(vertices, edges,
+                                                                                                 queries[4]))))
+
+
 def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
-    for i in range(0, len(objectives_ranges)-1, 2):
-        if objectives_ranges[i] > -1:   # This objective exists
+    for i in range(0, len(objectives_ranges) - 1, 2):
+        if objectives_ranges[i] > -1:  # This objective exists
             weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, objectives_ranges[i],
-                                                    objectives_ranges[i+1])
+                                                    objectives_ranges[i + 1])
             write_to_files(dest_directory, vertices, weighted_edges)
 
 
@@ -38,6 +51,7 @@ def write_to_files(path, vertices, edges):
 def generate_fully_random_graph(vertices, bi_directed, dest_directory, objectives_ranges, queries, edges_weights_method,
                                 edges_number):
     edges = fully_random(vertices, edges_number, bi_directed)
+    generate_queries(vertices, edges, queries, dest_directory)
     weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory)
 
 

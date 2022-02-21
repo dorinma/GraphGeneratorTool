@@ -8,7 +8,7 @@ import adapter
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Grid Connection', 'Bipartite Graph')
-weights_options = ('Fully Random', 'Planar', 'Other Calculation')
+weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
@@ -58,7 +58,6 @@ class GUI:
         self.edges_gen_methods.set(methods_options[0])
         self.edges_gen_weights.set(weights_options[0])
         self.cb_bidirectional.deselect()
-        self.t_queries.delete(0, 'end')
 
     # def disable_close(self):
     #     pass
@@ -304,27 +303,41 @@ class GUI:
         else:
             self.t_min_edges_between.config(state='readonly')
 
+    def cb_query_number(self):
+        if self.query_rnd.get() == 1:
+            self.t_queries_num.config(state='normal')
+        else:
+            self.t_queries_num.config(state='readonly')
+
     def validate_queries(self):
-        min_edges = 0
-        if self.selected_queries[2] == 1:  # min edges between source & target
+        queries_num, min_edges = 0, 0
+        valid = True
+        if self.selected_queries[0] == 1:  # random
+            if self.t_queries_num.get() != '':
+                queries_num = int(self.t_queries_num.get())
+                if queries_num <= 0:
+                    valid = False
+            else:
+                valid = False
+        if self.selected_queries[3] == 1:  # min edges between source & target
             if self.t_min_edges_between.get() != '':
                 min_edges = int(self.t_min_edges_between.get())
                 if min_edges <= 0:
-                    tkinter.messagebox.showinfo("Invalid Input",
-                                                "Please insert minimal number of edges between source and "
-                                                "target.")
-                    return False
+                    valid = False
             else:
-                tkinter.messagebox.showinfo("Invalid Input", "Please insert minimal number of edges between source and "
-                                                             "target.")
-                return False
-        self.selected_queries[3] = min_edges
-        return True
+                valid = False
+        if not valid:
+            tkinter.messagebox.showinfo("Missing parameters", "Missing queries number or min edges between source and "
+                                                              "target.")
+        else:
+            self.selected_queries[1] = queries_num
+            self.selected_queries[4] = min_edges
+        return valid
 
     def generate_graph(self):
         global dest_directory
 
-        self.selected_queries = [self.query_rnd.get(), self.query_all.get(), self.query_min_edges.get(), -1]
+        self.selected_queries = [self.query_rnd.get(), -1, self.query_all.get(), self.query_min_edges.get(), -1]
         objectives_ranges = [self.min_o1, self.max_o1, self.min_o2, self.max_o2, self.min_o3, self.max_o3,
                              self.min_o4, self.max_o4, self.min_o5, self.max_o5]
         if objectives_ranges[0] == -1:
@@ -468,7 +481,7 @@ class GUI:
         self.edges_bipartite2 = 0
         self.edges_bipartite_txt = 0
         self.edges_number_bipartite = 0
-        self.selected_queries = [0, 0, 0, 0]
+        self.selected_queries = [0, 0, 0, 0, 0]
 
         self.img = PhotoImage(file="tmp/1.png")
         self.img1 = self.img.subsample(1, 1)
@@ -521,18 +534,15 @@ class GUI:
 
         inc_row()
 
-        Label(root, text="Queries #").grid(row=row_index, column=0, sticky=W)
-
-        self.t_queries = Prox(root, width=15)
-        self.t_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
-
-        inc_row()
-
         Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=NW, rowspan=3, pady=5)
 
         self.query_rnd = IntVar()
-        self.cb_query_rnd = Checkbutton(root, text="Random", onvalue=1, offvalue=0, variable=self.query_rnd)
+        self.cb_query_rnd = Checkbutton(root, text="Random (#)", onvalue=1, offvalue=0, variable=self.query_rnd,
+                                        command=self.cb_query_number)
         self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+
+        self.t_queries_num = Prox(root, width=10, state='readonly')
+        self.t_queries_num.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
@@ -547,7 +557,7 @@ class GUI:
                                         command=self.cb_query_min_edges)
         self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W)
 
-        self.t_min_edges_between = Prox(root, width=7, state='readonly')
+        self.t_min_edges_between = Prox(root, width=10, state='readonly')
         self.t_min_edges_between.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
