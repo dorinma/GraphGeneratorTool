@@ -1,6 +1,7 @@
 import fractions
 import math
 import random
+from collections import deque
 
 NUM_VERTICES = 100
 NUM_EDGES = 500
@@ -154,13 +155,18 @@ def weights_to_edges_index_diff(edges, num_vertices, min_value, max_value):
 def weights_to_edges_coordinate(edges, v_coor_list):
     v_coor_dict = {}
     for v in v_coor_list:
-        v_coor_dict[v[0]] = (v[1], v[2], v[3])
+        if len(v) == 4:
+            v_coor_dict[v[0]] = (v[1], v[2], v[3])
+        else:
+            v_coor_dict[v[0]] = (v[1], v[2])
     weighted_edges = set()
     for edge in edges:
         u_coor = v_coor_dict[edge.u]
         v_coor = v_coor_dict[edge.v]
-        distance = math.sqrt(math.pow(u_coor[0] - v_coor[0], 2) + math.pow(u_coor[1] - v_coor[1], 2) +
-                             math.pow(u_coor[2] - v_coor[2], 2))
+        distance = math.pow(u_coor[0] - v_coor[0], 2) + math.pow(u_coor[1] - v_coor[1], 2)
+        if len(u_coor) == 3:
+            distance += math.pow(u_coor[2] - v_coor[2], 2)
+        distance = math.sqrt(distance)
         weighted_edges.add(EdgeWithValue(edge.u, edge.v, distance))
     return weighted_edges
 
@@ -182,6 +188,18 @@ def query_all_vertices_pairs(num_vertices):
     return query
 
 
+def query_pairs_at_least_x(num_vertices, edges, x):
+    query = set()
+    for i in range(1, num_vertices + 1):
+        for j in range(1, num_vertices + 1):
+            if i != j:
+                neighbors = get_neighbors_dict(edges)
+                paths = allPathsSourceTarget(neighbors, i, j, x)
+                if len(paths) > 0:
+                    query.add(tuple[i, j])
+    return query
+
+
 def query_toString(pairs):
     output = []
     for pair in pairs:
@@ -191,14 +209,18 @@ def query_toString(pairs):
 
 def gen_coordinate_by_range(num_vertices, long, long_max_diff, lat, lat_max_diff, alt, alt_max_diff):
     coor_list = []
-    for i in range(1, num_vertices + 1):
-        if i == 1:
-            coor_list.append((i, long, lat, alt))
-        else:
-            long_ = long + random.randint(-1 * long_max_diff, long_max_diff)
-            lat_ = lat + random.randint(-1 * lat_max_diff, lat_max_diff)
+    if alt != 0 and alt_max_diff != 0:
+        coor_list.append((1, long, lat, alt))
+    else:
+        coor_list.append((1, long, lat))
+    for i in range(2, num_vertices + 1):
+        long_ = long + random.randint(-1 * long_max_diff, long_max_diff)
+        lat_ = lat + random.randint(-1 * lat_max_diff, lat_max_diff)
+        if alt != 0 and alt_max_diff != 0:
             alt_ = alt + random.randint(-1 * alt_max_diff, alt_max_diff)
             coor_list.append((i, long_, lat_, alt_))
+        else:
+            coor_list.append((i, long_, lat_))
     return coor_list
 
 
@@ -206,9 +228,12 @@ def gen_coordinate_by_index(num_vertices, long, long_max_diff, lat, lat_max_diff
     coor_list = []
     for i in range(1, num_vertices + 1):
         long_ = long + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
-        lat_ = lat + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
-        alt_ = alt + random.randint((i - 1) * long_max_diff // num_vertices, i * long_max_diff // num_vertices)
-        coor_list.append((i, long_, lat_, alt_))
+        lat_ = lat + random.randint((i - 1) * lat_max_diff // num_vertices, i * lat_max_diff // num_vertices)
+        if alt != 0 and alt_max_diff != 0:
+            alt_ = alt + random.randint((i - 1) * alt_max_diff // num_vertices, i * alt_max_diff // num_vertices)
+            coor_list.append((i, long_, lat_, alt_))
+        else:
+            coor_list.append((i, long_, lat_))
     return coor_list
 
 
@@ -258,3 +283,29 @@ def write_to_file_query(full_path, edges):
         print("[INFO] Saved output to " + full_path)
     except:
         print("[ERROR] Could not write query file.")
+
+
+def get_neighbors_dict(edges):
+    neighbors = {}
+    for edge in edges:
+        if edge.u in neighbors:
+            neighbors[edge.u].append(edge.v)
+        else:
+            neighbors[edge.u] = []
+    return neighbors
+
+
+def allPathsSourceTarget(neighbors, s, g, x):
+    ans = []
+    q = deque([(s, [s])])
+    while q:
+        curNode, curPath = q.popleft()
+        if curNode == g:
+            if len(curPath) > x:
+                ans.append(curPath)
+                return ans
+        nexts = neighbors[curNode]
+        for nextNode in nexts:
+            if nextNode not in curPath:
+                q.append((nextNode, curPath + [nextNode]))
+    return ans
