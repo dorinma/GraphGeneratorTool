@@ -21,21 +21,36 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
 
 
-def generate_fully_random_graph(vertices, bi_directed, dest_directory, edges_weights_method,
+def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
+    for i in range(0, len(objectives_ranges)-1, 2):
+        if objectives_ranges[i] > -1:   # This objective exists
+            weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, objectives_ranges[i],
+                                                    objectives_ranges[i+1])
+            write_to_files(dest_directory, vertices, weighted_edges)
+
+
+def write_to_files(path, vertices, edges):
+    time_stamp = str(get_curr_time())
+    generator.write_to_file_gr(path + FILE_NAME + time_stamp, generator.gr_input_toString(vertices, edges))
+    # generator.write_to_file_co(path + FILE_NAME + time_stamp, generator.gr_input_toString(vertices, edges))
+
+
+def generate_fully_random_graph(vertices, bi_directed, dest_directory, objectives_ranges, edges_weights_method,
                                 edges_number):
     edges = fully_random(vertices, edges_number, bi_directed)
-    weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
-    write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
+    weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory)
+    # weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
+    # write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_fully_connected_dense_graph(vertices, bi_directed, dest_directory,
+def generate_fully_connected_dense_graph(vertices, bi_directed, dest_directory, objectives_ranges,
                                          edges_weights_method):
     edges = fully_connected_dense_graph(vertices, bi_directed)
     weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_fully_connected_graph(vertices, bi_directed, dest_directory, edges_weights_method,
+def generate_fully_connected_graph(vertices, bi_directed, dest_directory, objectives_ranges, edges_weights_method,
                                    edges_number):
     if edges_number == -1:
         edges = fully_connected(vertices, bi_directed, None)
@@ -45,14 +60,14 @@ def generate_fully_connected_graph(vertices, bi_directed, dest_directory, edges_
     generator.write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_flow_network(vertices, bi_directed, dest_directory, edges_weights_method,
+def generate_flow_network(vertices, bi_directed, dest_directory, objectives_ranges, edges_weights_method,
                           source_vertex, sink_vertex, num_of_paths):
     edges = flow_network(vertices, bi_directed, source_vertex, sink_vertex, num_of_paths)
     weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)
     generator.write_to_file_gr(dest_directory, generator.gr_input_toString(vertices, weighted_edges))
 
 
-def generate_bipartite_graph(vertices, bi_directed, dest_directory, edges_weights_method,
+def generate_bipartite_graph(vertices, bi_directed, dest_directory, objectives_ranges, edges_weights_method,
                              edges_number, rel1, rel2):
     edges = bipartite(vertices, bi_directed, edges_number, rel1, rel2)
     weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, 0, 0)

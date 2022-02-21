@@ -43,6 +43,13 @@ def inc_row():
     row_index += 1
 
 
+def validate_objective_range(min, max):
+    if min > max:
+        return False
+    else:
+        return True
+
+
 class GUI:
 
     def clear(self):
@@ -176,24 +183,52 @@ class GUI:
 
     def save_objectives(self, number):
         num = int(number)
+        missing_params = False
+        # 1 objective
         if self.t_min_o1.get() == '' or self.t_max_o1.get() == '':
-            if num > 1 and self.t_min_o2.get() == '' or self.t_max_o2.get() == '':
-                if num > 2 and self.t_min_o3.get() == '' or self.t_max_o3.get() == '':
-                    if num > 3 and self.t_min_o4.get() == '' or self.t_max_o4.get() == '':
-                        if num > 4 and self.t_min_o5.get() == '' or self.t_max_o5.get() == '':
-                            tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
-                                                        parent=self.objectives_window)
-                    else:
-                        tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
-                                                    parent=self.objectives_window)
-                else:
-                    tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
-                                                parent=self.objectives_window)
-            else:
-                tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
-                                            parent=self.objectives_window)
+            missing_params = True
         else:
-            tkinter.messagebox.showinfo("Info", "Please fill all fields then press \"Save\".",
+            self.min_o1 = int(self.t_min_o1.get())
+            self.max_o1 = int(self.t_max_o1.get())
+
+        if num > 1:
+            # 2nd objective
+            if self.t_min_o2.get() == '' or self.t_max_o2.get() == '':
+                missing_params = True
+            else:
+                self.min_o2 = int(self.t_min_o2.get())
+                self.max_o2 = int(self.t_max_o2.get())
+            if num > 2:
+                # 3rd objective
+                if self.t_min_o3.get() == '' or self.t_max_o3.get() == '':
+                    missing_params = True
+                else:
+                    self.min_o3 = int(self.t_min_o3.get())
+                    self.max_o3 = int(self.t_max_o3.get())
+                if num > 3:
+                    # 4th objective
+                    if self.t_min_o4.get() == '' or self.t_max_o4.get() == '':
+                        missing_params = True
+                    else:
+                        self.min_o4 = int(self.t_min_o4.get())
+                        self.max_o4 = int(self.t_max_o4.get())
+                    if num > 4:
+                        # 5th objective
+                        if self.t_min_o5.get() == '' or self.t_max_o5.get() == '':
+                            missing_params = True
+                        else:
+                            self.min_o5 = int(self.t_min_o5.get())
+                            self.max_o5 = int(self.t_max_o5.get())
+        if missing_params:
+            tkinter.messagebox.showinfo("Missing parameters", "Please fill all fields then press \"Save\".",
+                                        parent=self.objectives_window)
+        elif validate_objective_range(self.min_o1, self.max_o1) and validate_objective_range(self.min_o2, self.max_o2) \
+                and validate_objective_range(self.min_o3, self.max_o3) and validate_objective_range(self.min_o4,
+                                                                                                    self.max_o4) \
+                and validate_objective_range(self.min_o5, self.max_o5):
+            self.objectives_window.destroy()
+        else:
+            tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max for all objectives.",
                                         parent=self.objectives_window)
 
     def open_objectives_window(self, num):
@@ -203,6 +238,8 @@ class GUI:
         self.objectives_window.geometry("250x" + str(win_width))
         self.objectives_window.resizable(False, False)
         self.objectives_number = num
+        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
+        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
         # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
 
         row = 0
@@ -268,31 +305,34 @@ class GUI:
         if self.validate_input():
             print("[DEBUG] Generating...")
             vertices_num = int(self.t_vertices.get())
+            objectives_ranges = [self.min_o1, self.max_o1, self.min_o2, self.max_o2, self.min_o3, self.max_o3,
+                                 self.min_o4, self.max_o4, self.min_o5, self.max_o5]
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
                 edges_number = self.edges_number_full_random
                 if self.edges_percentage:
                     edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                    self.edges_gen_methods.get(), edges_number)
+                                                    objectives_ranges, self.edges_gen_methods.get(), edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                             self.edges_gen_methods.get())
+                                                             objectives_ranges, self.edges_gen_methods.get())
             elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
                 adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                       self.edges_gen_methods.get(), self.edges_number_connected)
+                                                       objectives_ranges, self.edges_gen_methods.get(),
+                                                       self.edges_number_connected)
             elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
-                adapter.generate_flow_network(vertices_num, self.bidir.get() == 1, dest_directory,
+                adapter.generate_flow_network(vertices_num, self.bidir.get() == 1, dest_directory, objectives_ranges,
                                               self.edges_gen_methods.get(), self.edges_flow_src, self.edges_flow_dst,
                                               self.edges_flow_paths)
             elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
-                adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1, dest_directory,
+                adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1, dest_directory, objectives_ranges,
                                                  self.edges_gen_methods.get(), self.edges_number_bipartite,
                                                  self.edges_bipartite1, self.edges_bipartite2)
             else:  # Grid
                 return
 
     def validate_input(self):
-        if self.validate_vertices() and self.validate_params() and self.validate_objectives_ranges():
+        if self.validate_vertices() and self.validate_params():  # and self.validate_objectives_values():
             return True
         else:
             return False
@@ -338,51 +378,6 @@ class GUI:
                     return True
             except:
                 return False
-            # t.remove('\n')
-            # print(int(t[0]))
-            # print(int(t[1]))
-            # try:
-            #     values = self.t_edge_relation.get(1.0, END).split(":")
-            #     if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
-            #         return True
-            # except:
-            #     return False
-
-    def validate_objectives_ranges(self):
-        return True
-    #     valid = [True] * self.objectives_number
-    #     try:
-    #         if self.t_min_o1 != '' and self.t_max_o1 != '':
-    #             self.min_o1 = int(self.t_min_o1.get())
-    #             self.max_o1 = int(self.t_max_o1.get())
-    #             if self.objectives_number > 1:
-    #                 if self.t_min_o2 != '' and self.t_max_o2 != '':
-    #                     self.min_o2 = int(self.t_min_o2.get())
-    #                     self.max_o2 = int(self.t_max_o2.get())
-    #                     if self.objectives_number > 2:
-    #                         if self.t_min_o3 != '' and self.t_max_o3 != '':
-    #                             self.min_o3 = int(self.t_min_o3.get())
-    #                             self.max_o3 = int(self.t_max_o3.get())
-    #                             if self.objectives_number > 3:
-    #                                 if self.t_min_o4 != '' and self.t_max_o4 != '':
-    #                                     self.min_o4 = int(self.t_min_o4.get())
-    #                                     self.max_o4 = int(self.t_max_o4.get())
-    #                                     if self.objectives_number > 4:
-    #                                         if self.t_min_o5 != '' and self.t_max_o5 != '':
-    #                                             self.min_o5 = int(self.t_min_o5.get())
-    #                                             self.max_o5 = int(self.t_max_o5.get())
-    #                                         else:
-    #                                             return False
-    #                                 else:
-    #                                     return False
-    #                         else:
-    #                             return False
-    #                 else:
-    #                     return False
-    #         else:
-    #             return False
-    #     except:
-    #         return False
 
     def get_fully_random_params(self):
         if self.edges_method_full_rnd_perc.get() == 0:  #
@@ -420,13 +415,13 @@ class GUI:
         self.t_min_o3 = Prox()
         self.t_min_o4 = Prox()
         self.t_min_o5 = Prox()
-        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = 0, 0, 0, 0, 0
+        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
         self.t_max_o1 = Prox()
         self.t_max_o2 = Prox()
         self.t_max_o3 = Prox()
         self.t_max_o4 = Prox()
         self.t_max_o5 = Prox()
-        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = 0, 0, 0, 0, 0
+        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
 
         # self.t_edges_number = Prox()
         self.edges_number_full_random = 0
@@ -441,7 +436,7 @@ class GUI:
         self.edges_bipartite_txt = 0
         self.edges_number_bipartite = 0
 
-        self.img = PhotoImage(file="1.png")
+        self.img = PhotoImage(file="tmp/1.png")
         self.img1 = self.img.subsample(1, 1)
         self.c = Canvas(root, bg="black", height=370, width=270)
         self.c.grid(row=0, column=3, rowspan=13, pady=2)
@@ -499,13 +494,28 @@ class GUI:
 
         inc_row()
 
-        Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=NW, rowspan=3, pady=5)
 
-        self.queries = StringVar(root)
-        self.queries.set(queries_options[0])
-        self.om_queries = OptionMenu(root, self.queries, *queries_options)
-        self.om_queries.config(width=25)
-        self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        self.query_rnd = IntVar()
+        self.cb_query_rnd = Checkbutton(root, text="Random", onvalue=1, offvalue=0, variable=self.query_rnd)
+        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        inc_row()
+        self.query_all = IntVar()
+        self.cb_query_rnd = Checkbutton(root, text="All Pairs", onvalue=1, offvalue=0, variable=self.query_all)
+        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        inc_row()
+        self.query_min_edges = IntVar()
+        self.cb_query_rnd = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0, variable=self.query_min_edges)
+        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_min_edges_between = Prox(root, width=7)
+        self.t_min_edges_between.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        # self.queries = StringVar(root)
+        # self.queries.set(queries_options[0])
+        # self.om_queries = OptionMenu(root, self.queries, *queries_options)
+        # self.om_queries.config(width=25)
+        # self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
