@@ -3,7 +3,7 @@ import time
 
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
-weights_options = ('Fully Random', 'Planar', 'Other Calculation')
+weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
 # queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 FILE_NAME_GR = "graph_"
 FILE_NAME_Q_RND = "query_random_"
@@ -20,7 +20,7 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
         return generator.weights_to_edges_random(edges, min_e_val, max_e_val)
     elif method == weights_options[1]:  # Planar
         return generator.weights_to_edges_planar_connection(edges, min_e_val, max_e_val)
-    else:  # Other calculation
+    else:  # Predefined calculation
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
 
 

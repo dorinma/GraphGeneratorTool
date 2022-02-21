@@ -12,6 +12,11 @@ weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
+LONG = -74005973
+LAT = 40712775
+ALT = 10
+COOR_DIFF = 1000
+ALT_DIFF = 100
 
 
 class Prox(Entry):
@@ -346,12 +351,14 @@ class GUI:
         if self.validate_input():
             print("[DEBUG] Generating...")
             vertices_num = int(self.t_vertices.get())
+            coordinates = [self.long, self.long_diff, self.lat, self.lat_diff, self.alt, self.alt_diff]
+            rnd_distance = self.rb_coor.get() == 0  # Random
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
                 edges_number = self.edges_number_full_random
                 if self.edges_percentage:
                     edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                    objectives_ranges, self.selected_queries,
+                                                    objectives_ranges, self.selected_queries, # coordinates, rnd_distance,
                                                     self.edges_gen_methods.get(), edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1, dest_directory,
@@ -374,13 +381,25 @@ class GUI:
                 return
 
     def validate_input(self):
-        if self.validate_vertices() and self.validate_queries():
+        if self.validate_vertices() and self.validate_queries() and self.validate_coordinates():
             if not self.validate_params_edges_gen_method():
                 tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
                 return False
             else:
                 return True
         else:
+            return False
+
+    def validate_coordinates(self):
+        try:
+            self.long = int(self.t_long.get('1.0', END))
+            self.long_diff = int(self.t_long_diff.get('1.0', END))
+            self.lat = int(self.t_lat.get('1.0', END))
+            self.lat_diff = int(self.t_lat_diff.get('1.0', END))
+            self.alt = int(self.t_alt.get('1.0', END))
+            self.alt_diff = int(self.t_alt_diff.get('1.0', END))
+            return True
+        except:
             return False
 
     def validate_vertices(self):
@@ -451,7 +470,7 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("650x410")
+        self.root.geometry("650x500")
         self.root.resizable(False, False)
 
         # Objectives
@@ -482,11 +501,17 @@ class GUI:
         self.edges_bipartite_txt = 0
         self.edges_number_bipartite = 0
         self.selected_queries = [0, 0, 0, 0, 0]
+        self.long = LONG
+        self.long_diff = COOR_DIFF
+        self.lat = LAT
+        self.lat_diff = COOR_DIFF
+        self.alt = ALT
+        self.alt_diff = ALT_DIFF
 
         self.img = PhotoImage(file="tmp/1.png")
         self.img1 = self.img.subsample(1, 1)
-        self.c = Canvas(root, bg="black", height=370, width=270)
-        self.c.grid(row=0, column=3, rowspan=13, pady=2)
+        self.c = Canvas(root, bg="black", height=470, width=270)
+        self.c.grid(row=0, column=3, rowspan=20, pady=2)
         self.c.create_image(50, 10, image=self.img1)
 
         Label(root, text="Vertices #").grid(row=row_index, column=0, sticky=W)
@@ -566,12 +591,62 @@ class GUI:
 
         inc_row()
 
-        # Buttons
-        self.b_clear = Button(root, text="Clear Form", command=self.clear, width=9)
-        self.b_clear.grid(row=row_index, column=0, padx=8, sticky=W)
+        Label(root, text="Coordinates").grid(row=row_index, column=0, sticky=NW, pady=3)
 
-        self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=9)
-        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        Label(root, text="Longitude").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_long = Text(root, height=1, width=11)
+        self.t_long.insert(1.0, str(self.long))
+        self.t_long.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        Label(root, text="Long diff").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_long_diff = Text(root, height=1, width=11)
+        self.t_long_diff.insert(1.0, str(self.long_diff))
+        self.t_long_diff.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        Label(root, text="Latitude").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_lat = Text(root, height=1, width=11)
+        self.t_lat.insert(1.0, str(self.lat))
+        self.t_lat.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        Label(root, text="Generate:").grid(row=row_index, column=0, sticky=W)
+
+        Label(root, text="Lat diff").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_lat_diff = Text(root, height=1, width=11)
+        self.t_lat_diff.insert(1.0, str(self.lat_diff))
+        self.t_lat_diff.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        self.rb_coor = IntVar()
+        self.rb_edges_num = Radiobutton(root, text="Randomly", value=0, variable=self.rb_coor)
+        self.rb_edges_num.grid(row=row_index, column=0, sticky=W)
+
+        Label(root, text="Altitude").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_alt = Text(root, height=1, width=11)
+        self.t_alt.insert(1.0, str(self.alt))
+        self.t_alt.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        self.rb_edges_num = Radiobutton(root, text="By Index", value=1, variable=self.rb_coor)
+        self.rb_edges_num.grid(row=row_index, column=0, sticky=NW, rowspan=4)
+
+        Label(root, text="Alt diff").grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_alt_diff = Text(root, height=1, width=11)
+        self.t_alt_diff.insert(1.0, str(self.alt_diff))
+        self.t_alt_diff.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
@@ -579,10 +654,24 @@ class GUI:
 
         inc_row()
 
+        # Buttons
+        self.b_clear = Button(root, text="Clear Form", command=self.clear, width=9)
+        self.b_clear.grid(row=row_index, column=0, padx=8, pady=2, sticky=W)
+
+        self.b_clear = Button(root, text="Load From", command=get_source_directory, width=10)
+        self.b_clear.grid(row=row_index, column=2, padx=8, pady=2, sticky=E)
+
+        inc_row()
+        Label(root, text='').grid(row=row_index, column=0, columnspan=2)
+
+        self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=10)
+        self.b_clear.grid(row=row_index, column=2, padx=8, pady=2, sticky=E)
+
+        inc_row()
+
         self.b_generate = Button(root, text="Generate", command=self.generate_graph, width=9)
         self.b_generate.grid(row=row_index, column=0, padx=8, sticky=W)
 
-        self.b_clear = Button(root, text="Load From", command=get_source_directory, width=9)
-        self.b_clear.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+
 
         inc_row()
