@@ -59,7 +59,6 @@ class GUI:
         self.edges_gen_weights.set(weights_options[0])
         self.cb_bidirectional.deselect()
         self.t_queries.delete(0, 'end')
-        self.queries.set(queries_options[0])
 
     # def disable_close(self):
     #     pass
@@ -299,41 +298,75 @@ class GUI:
                                                                                                     pady=2,
                                                                                                     sticky=E)
 
+    def cb_query_min_edges(self):
+        if self.query_min_edges.get() == 1:
+            self.t_min_edges_between.config(state='normal')
+        else:
+            self.t_min_edges_between.config(state='readonly')
+
+    def validate_queries(self):
+        min_edges = 0
+        if self.selected_queries[2] == 1:  # min edges between source & target
+            if self.t_min_edges_between.get() != '':
+                min_edges = int(self.t_min_edges_between.get())
+                if min_edges <= 0:
+                    tkinter.messagebox.showinfo("Invalid Input",
+                                                "Please insert minimal number of edges between source and "
+                                                "target.")
+                    return False
+            else:
+                tkinter.messagebox.showinfo("Invalid Input", "Please insert minimal number of edges between source and "
+                                                             "target.")
+                return False
+        self.selected_queries[3] = min_edges
+        return True
+
     def generate_graph(self):
         global dest_directory
 
+        self.selected_queries = [self.query_rnd.get(), self.query_all.get(), self.query_min_edges.get(), -1]
+        objectives_ranges = [self.min_o1, self.max_o1, self.min_o2, self.max_o2, self.min_o3, self.max_o3,
+                             self.min_o4, self.max_o4, self.min_o5, self.max_o5]
+        if objectives_ranges[0] == -1:
+            tkinter.messagebox.showinfo("Invalid Input", "Insert objective values.")
+            return
         if self.validate_input():
             print("[DEBUG] Generating...")
             vertices_num = int(self.t_vertices.get())
-            objectives_ranges = [self.min_o1, self.max_o1, self.min_o2, self.max_o2, self.min_o3, self.max_o3,
-                                 self.min_o4, self.max_o4, self.min_o5, self.max_o5]
             if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
                 edges_number = self.edges_number_full_random
                 if self.edges_percentage:
                     edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                    objectives_ranges, self.edges_gen_methods.get(), edges_number)
+                                                    objectives_ranges, self.selected_queries,
+                                                    self.edges_gen_methods.get(), edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                             objectives_ranges, self.edges_gen_methods.get())
+                                                             objectives_ranges, self.selected_queries,
+                                                             self.edges_gen_methods.get())
             elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
                 adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1, dest_directory,
-                                                       objectives_ranges, self.edges_gen_methods.get(),
-                                                       self.edges_number_connected)
+                                                       objectives_ranges, self.selected_queries,
+                                                       self.edges_gen_methods.get(), self.edges_number_connected)
             elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
                 adapter.generate_flow_network(vertices_num, self.bidir.get() == 1, dest_directory, objectives_ranges,
-                                              self.edges_gen_methods.get(), self.edges_flow_src, self.edges_flow_dst,
-                                              self.edges_flow_paths)
+                                              self.selected_queries, self.edges_gen_methods.get(), self.edges_flow_src,
+                                              self.edges_flow_dst, self.edges_flow_paths)
             elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
                 adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1, dest_directory, objectives_ranges,
-                                                 self.edges_gen_methods.get(), self.edges_number_bipartite,
-                                                 self.edges_bipartite1, self.edges_bipartite2)
+                                                 self.selected_queries, self.edges_gen_methods.get(),
+                                                 self.edges_number_bipartite, self.edges_bipartite1,
+                                                 self.edges_bipartite2)
             else:  # Grid
                 return
 
     def validate_input(self):
-        if self.validate_vertices() and self.validate_params():  # and self.validate_objectives_values():
-            return True
+        if self.validate_vertices() and self.validate_queries():
+            if not self.validate_params_edges_gen_method():
+                tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
+                return False
+            else:
+                return True
         else:
             return False
 
@@ -351,7 +384,7 @@ class GUI:
             else:
                 return True
 
-    def validate_params(self):
+    def validate_params_edges_gen_method(self):
         if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random - number/ percentage
             if self.edges_percentage and (self.edges_percentage_full_random <= 0 or self.edges_percentage_full_random >
                                           100):
@@ -389,13 +422,13 @@ class GUI:
 
     def get_fully_connected_params(self):
         if self.edges_method_full_connected.get() == 1:  # MST + more
-            self.edges_number_connected = self.t_add_edges_to_mst.get()
+            self.edges_number_connected = int(self.t_add_edges_to_mst.get())
         self.edges_method_window.destroy()
 
     def get_flow_params(self):
-        self.edges_flow_src = self.t_edge_src.get()
-        self.edges_flow_dst = self.t_edge_dst.get()
-        self.edges_flow_paths = self.t_edge_paths_num.get()
+        self.edges_flow_src = int(self.t_edge_src.get())
+        self.edges_flow_dst = int(self.t_edge_dst.get())
+        self.edges_flow_paths = int(self.t_edge_paths_num.get())
         self.edges_method_window.destroy()
 
     def get_bipartite_params(self):
@@ -435,6 +468,7 @@ class GUI:
         self.edges_bipartite2 = 0
         self.edges_bipartite_txt = 0
         self.edges_number_bipartite = 0
+        self.selected_queries = [0, 0, 0, 0]
 
         self.img = PhotoImage(file="tmp/1.png")
         self.img1 = self.img.subsample(1, 1)
@@ -499,23 +533,22 @@ class GUI:
         self.query_rnd = IntVar()
         self.cb_query_rnd = Checkbutton(root, text="Random", onvalue=1, offvalue=0, variable=self.query_rnd)
         self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+
         inc_row()
+
         self.query_all = IntVar()
         self.cb_query_rnd = Checkbutton(root, text="All Pairs", onvalue=1, offvalue=0, variable=self.query_all)
         self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+
         inc_row()
+
         self.query_min_edges = IntVar()
-        self.cb_query_rnd = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0, variable=self.query_min_edges)
+        self.cb_query_rnd = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0, variable=self.query_min_edges,
+                                        command=self.cb_query_min_edges)
         self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W)
 
-        self.t_min_edges_between = Prox(root, width=7)
+        self.t_min_edges_between = Prox(root, width=7, state='readonly')
         self.t_min_edges_between.grid(row=row_index, column=2, padx=8, sticky=W)
-
-        # self.queries = StringVar(root)
-        # self.queries.set(queries_options[0])
-        # self.om_queries = OptionMenu(root, self.queries, *queries_options)
-        # self.om_queries.config(width=25)
-        # self.om_queries.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
