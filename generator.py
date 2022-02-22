@@ -272,7 +272,7 @@ def co_input_to_string(v_coor_list):
               "p\taux sp co " + str(len(v_coor_list)) + "\n", "c\tgraph contains " + str(len(v_coor_list)) + " nodes\n",
               "c\n"]
     for i in range(0, len(v_coor_list)):
-        if len(v_coor_list[i]) == 3:
+        if len(v_coor_list[i]) == 4:
             output.append("v\t" + str(v_coor_list[i][0]) + "\t" + str(v_coor_list[i][1]) + "\t" + str(v_coor_list[i][2])
                           + "\t" + str(v_coor_list[i][3]) + "\n")
         else:
@@ -499,3 +499,15 @@ def weight_grid_random(movement, coor_ver, min_value, max_value):
     return edges
 
 
+def co_grid_input_to_string(v_coor_dict):
+    output = ["c\tCreated in graph generator tool by Shahar Bardugo & Dorin Matzrafi\n", "c\n",
+              "p\taux sp co " + str(len(v_coor_dict)) + "\n", "c\tgraph contains " + str(len(v_coor_dict)) + " nodes\n",
+              "c\n"]
+    for key in v_coor_dict:
+        if len(key) == 3:
+            output.append("v\t" + str(v_coor_dict[key]) + "\t" + str(key[0]) + "\t" + str(key[1])
+                          + "\t" + str(key[2]) + "\n")
+        else:
+            output.append(
+                "v\t" + str(v_coor_dict[key]) + "\t" + str(key[0]) + "\t" + str(key[1]) + "\n")
+    return output
