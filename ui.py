@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import filedialog as fd
 import tkinter.messagebox
+
 import os
 import read_write_io
 
@@ -9,7 +10,8 @@ import adapter
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Grid Connection', 'Bipartite Graph')
-weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
+weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation')
+weights_options_grid = ('By axis (1)', 'Random')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
@@ -61,11 +63,8 @@ class GUI:
     def clear(self):
         self.t_vertices.delete(0, 'end')
         self.edges_gen_methods.set(methods_options[0])
-        self.edges_weights_method.set(weights_options[0])
+        self.edges_weights_method.set(weights_options_graphs[0])
         self.cb_bidirectional.deselect()
-
-    # def disable_close(self):
-    #     pass
 
     def open_edges_method_window(self, method):
         if method == methods_options[1]:  # Fully Connected Dense Graph - no params
@@ -153,6 +152,12 @@ class GUI:
             self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8, command=self.get_flow_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2)
 
+        elif method == methods_options[4]:  # Grid
+            # self.edges_weights_method = StringVar(self.root)
+            self.edges_weights_method.set(weights_options_grid[0])
+            self.om_edges_weights.option_clear()
+            self.om_edges_weights = OptionMenu(self.root, self.edges_weights_method, *weights_options_grid)
+
         elif method == methods_options[5]:  # Bipartite Graph
             Label(self.edges_method_window, text="Relation between sets of vertices, ").grid(row=row, column=0, padx=6,
                                                                                              pady=2, columnspan=2,
@@ -234,124 +239,6 @@ class GUI:
         else:
             tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max.",
                                         parent=self.objective_val_window)
-
-    # def save_objectives(self, number):
-    #     num = int(number)
-    #     missing_params = False
-    #     # 1 objective
-    #     if self.t_min_o1.get() == '' or self.t_max_o1.get() == '':
-    #         missing_params = True
-    #     else:
-    #         self.min_o1 = int(self.t_min_o1.get())
-    #         self.max_o1 = int(self.t_max_o1.get())
-    #
-    #     if num > 1:
-    #         # 2nd objective
-    #         if self.t_min_o2.get() == '' or self.t_max_o2.get() == '':
-    #             missing_params = True
-    #         else:
-    #             self.min_o2 = int(self.t_min_o2.get())
-    #             self.max_o2 = int(self.t_max_o2.get())
-    #         if num > 2:
-    #             # 3rd objective
-    #             if self.t_min_o3.get() == '' or self.t_max_o3.get() == '':
-    #                 missing_params = True
-    #             else:
-    #                 self.min_o3 = int(self.t_min_o3.get())
-    #                 self.max_o3 = int(self.t_max_o3.get())
-    #             if num > 3:
-    #                 # 4th objective
-    #                 if self.t_min_o4.get() == '' or self.t_max_o4.get() == '':
-    #                     missing_params = True
-    #                 else:
-    #                     self.min_o4 = int(self.t_min_o4.get())
-    #                     self.max_o4 = int(self.t_max_o4.get())
-    #                 if num > 4:
-    #                     # 5th objective
-    #                     if self.t_min_o5.get() == '' or self.t_max_o5.get() == '':
-    #                         missing_params = True
-    #                     else:
-    #                         self.min_o5 = int(self.t_min_o5.get())
-    #                         self.max_o5 = int(self.t_max_o5.get())
-    #     if missing_params:
-    #         tkinter.messagebox.showinfo("Missing parameters", "Please fill all fields then press \"Save\".",
-    #                                     parent=self.objectives_window)
-    #     elif validate_objective_range(self.min_o1, self.max_o1) and validate_objective_range(self.min_o2, self.max_o2) \
-    #             and validate_objective_range(self.min_o3, self.max_o3) and validate_objective_range(self.min_o4,
-    #                                                                                                 self.max_o4) \
-    #             and validate_objective_range(self.min_o5, self.max_o5):
-    #         self.objectives_window.destroy()
-    #     else:
-    #         tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max for all objectives.",
-    #                                     parent=self.objectives_window)
-
-    # def open_objectives_window(self, num):
-    #     self.objectives_window = Toplevel(self.root)
-    #     self.objectives_window.title("Objectives")
-    #     win_width = int(num) * 25 + 60
-    #     self.objectives_window.geometry("250x" + str(win_width))
-    #     self.objectives_window.resizable(False, False)
-    #     self.objectives_number = num
-    #     self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
-    #     self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
-    #     # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
-    #
-    #     row = 0
-    #     Label(self.objectives_window, text="Insert min & max value for each objective:").grid(row=row, column=0,
-    #                                                                                           pady=2, columnspan=5)
-    #     row += 1
-    #     Label(self.objectives_window, text="#1").grid(row=row, column=0, padx=4, pady=2)
-    #     Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-    #     self.t_min_o1 = Prox(self.objectives_window, width=10)
-    #     self.t_min_o1.grid(row=row, column=2)
-    #     Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-    #     self.t_max_o1 = Prox(self.objectives_window, width=10)
-    #     self.t_max_o1.grid(row=row, column=4)
-    #
-    #     if int(num) > 1:
-    #         row += 1
-    #         Label(self.objectives_window, text="#2").grid(row=row, column=0, padx=4, pady=2)
-    #         Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-    #         self.t_min_o2 = Prox(self.objectives_window, width=10)
-    #         self.t_min_o2.grid(row=row, column=2)
-    #         Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-    #         self.t_max_o2 = Prox(self.objectives_window, width=10)
-    #         self.t_max_o2.grid(row=row, column=4)
-    #
-    #         if int(num) > 2:
-    #             row += 1
-    #             Label(self.objectives_window, text="#3").grid(row=row, column=0, padx=4, pady=2)
-    #             Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-    #             self.t_min_o3 = Prox(self.objectives_window, width=10)
-    #             self.t_min_o3.grid(row=row, column=2)
-    #             Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-    #             self.t_max_o3 = Prox(self.objectives_window, width=10)
-    #             self.t_max_o3.grid(row=row, column=4)
-    #
-    #             if int(num) > 3:
-    #                 row += 1
-    #                 Label(self.objectives_window, text="#4").grid(row=row, column=0, padx=4, pady=2)
-    #                 Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-    #                 self.t_min_o4 = Prox(self.objectives_window, width=10)
-    #                 self.t_min_o4.grid(row=row, column=2)
-    #                 Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-    #                 self.t_max_o4 = Prox(self.objectives_window, width=10)
-    #                 self.t_max_o4.grid(row=row, column=4)
-    #
-    #                 if int(num) > 4:
-    #                     row += 1
-    #                     Label(self.objectives_window, text="#5").grid(row=row, column=0, padx=4, pady=2)
-    #                     Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-    #                     self.t_min_o5 = Prox(self.objectives_window, width=10)
-    #                     self.t_min_o5.grid(row=row, column=2)
-    #                     Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-    #                     self.t_max_o5 = Prox(self.objectives_window, width=10)
-    #                     self.t_max_o5.grid(row=row, column=4)
-    #     row += 1
-    #     Button(self.objectives_window, text="Save", command=lambda: self.save_objectives(num)).grid(row=row, column=0,
-    #                                                                                                 columnspan=5,
-    #                                                                                                 pady=2,
-    #                                                                                                 sticky=E)
 
     def cb_query_min_edges(self):
         if self.query_min_edges.get() == 1:
@@ -541,22 +428,8 @@ class GUI:
         self.root.geometry("690x550")
         self.root.resizable(False, False)
 
-        # Objectives
+        # Variables
         self.objectives = read_write_io.read_config()
-        # self.objectives_number = 1
-        # self.t_min_o1 = Prox()
-        # self.t_min_o2 = Prox()
-        # self.t_min_o3 = Prox()
-        # self.t_min_o4 = Prox()
-        # self.t_min_o5 = Prox()
-        # self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
-        # self.t_max_o1 = Prox()
-        # self.t_max_o2 = Prox()
-        # self.t_max_o3 = Prox()
-        # self.t_max_o4 = Prox()
-        # self.t_max_o5 = Prox()
-        # self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
-
         self.edges_number_full_random = 0
         self.edges_percentage_full_random = 0
         self.edges_percentage = False
@@ -618,8 +491,8 @@ class GUI:
         Label(root, text="Edges Weights").grid(row=row_index, column=0, sticky=W)
 
         self.edges_weights_method = StringVar(root)
-        self.edges_weights_method.set(weights_options[0])
-        self.om_edges_weights = OptionMenu(root, self.edges_weights_method, *weights_options)
+        self.edges_weights_method.set(weights_options_graphs[0])
+        self.om_edges_weights = OptionMenu(root, self.edges_weights_method, *weights_options_graphs)
         self.om_edges_weights.config(width=25)
         self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
