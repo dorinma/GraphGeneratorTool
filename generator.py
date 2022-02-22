@@ -1,4 +1,5 @@
 import fractions
+import itertools
 import math
 import random
 from collections import deque
@@ -133,6 +134,11 @@ def weights_to_edges_random(edges, min_value, max_value):
 
 
 def weights_to_edges_planar_connection(edges, min_value, max_value):
+    weighted_edges = set()
+    if min_value == max_value:
+        for edge in edges:
+            weighted_edges.add(EdgeWithValue(edge.u, edge.v, max_value))
+        return weighted_edges
     if min_value <= max_value // 2:
         min_value = max_value // 2
     max_value -= 2
@@ -266,8 +272,12 @@ def co_input_to_string(v_coor_list):
               "p\taux sp co " + str(len(v_coor_list)) + "\n", "c\tgraph contains " + str(len(v_coor_list)) + " nodes\n",
               "c\n"]
     for i in range(0, len(v_coor_list)):
-        output.append("v\t" + str(v_coor_list[i][0]) + "\t" + str(v_coor_list[i][1]) + "\t" + str(v_coor_list[i][2]) +
-                      "\t" + str(v_coor_list[i][3]) + "\n")
+        if len(v_coor_list[i]) == 3:
+            output.append("v\t" + str(v_coor_list[i][0]) + "\t" + str(v_coor_list[i][1]) + "\t" + str(v_coor_list[i][2])
+                          + "\t" + str(v_coor_list[i][3]) + "\n")
+        else:
+            output.append(
+                "v\t" + str(v_coor_list[i][0]) + "\t" + str(v_coor_list[i][1]) + "\t" + str(v_coor_list[i][2]) + "\n")
     return output
 
 
@@ -339,3 +349,153 @@ def all_paths_source_target(neighbors, s, g):
             if nextNode not in cur_path:
                 q.append((nextNode, cur_path + [nextNode]))
     return ans
+
+
+def crate_2d_grid(x, y, num_blocks):
+    d2_grid = [[0 for i in range(x)] for j in range(y)]
+    counter = 0
+    bias = fractions.Fraction(num_blocks, x*y)
+    while counter != num_blocks:
+        for i in range(0, y):
+            for j in range(0, x):
+                if random.random() < bias and counter != num_blocks and d2_grid[i][j] == 0:
+                    d2_grid[i][j] = -1
+                    counter += 1
+    return d2_grid
+
+
+def crate_3d_grid(x, y, z, num_blocks):
+    d3_grid = [[[0 for i in range(x)] for j in range(y)] for k in range(z)]
+    counter = 0
+    bias = fractions.Fraction(num_blocks, x*y*z)
+    while counter != num_blocks:
+        for i in range(0, z):
+            for j in range(0, y):
+                for k in range(0, x):
+                    if random.random() < bias and counter != num_blocks and d3_grid[i][j][k] == 0:
+                        d3_grid[i][j][k] = -1
+                        counter += 1
+    return d3_grid
+
+
+def movement_2d_grid(grid, num_direction_movement):
+    movement = {}
+    for i in range(0, len(grid)):
+        for j in range(0, len(grid[0])):
+            move = []
+            if grid[i][j] != -1:
+                x_list = []
+                y_list = []
+                if i-1 in range(0, len(grid)):
+                    x_list.append(i-1)
+                if i+1 in range(0, len(grid)):
+                    x_list.append(i+1)
+                if j-1 in range(0, len(grid[0])):
+                    y_list.append(j-1)
+                if j+1 in range(0, len(grid[0])):
+                    y_list.append(j+1)
+                for it in itertools.product([i], y_list):
+                    move.append(it)
+                for it in itertools.product(x_list, [j]):
+                    move.append(it)
+                if num_direction_movement == 2:
+                    for it in itertools.product(x_list, y_list):
+                        move.append(it)
+                for move_ in move:
+                    if grid[move_[0]][move_[1]] == -1:
+                        move.remove(move_)
+                movement[(i, j)] = move
+    return movement
+
+
+def movement_3d_grid(grid, num_direction_movement):
+    movement = {}
+    for i in range(0, len(grid)):
+        for j in range(0, len(grid[0])):
+            for k in range(0, len(grid[0][0])):
+                move = []
+                if grid[i][j][k] != -1:
+                    x_list = []
+                    y_list = []
+                    z_list = []
+                    if i-1 in range(0, len(grid)):
+                        x_list.append(i-1)
+                    if i+1 in range(0, len(grid)):
+                        x_list.append(i+1)
+                    if j-1 in range(0, len(grid[0])):
+                        y_list.append(j-1)
+                    if j+1 in range(0, len(grid[0])):
+                        y_list.append(j+1)
+                    if k-1 in range(0, len(grid[0][0])):
+                        z_list.append(k-1)
+                    if k+1 in range(0, len(grid[0][0])):
+                        z_list.append(k+1)
+                    for it in itertools.product([i], [j], z_list):
+                        move.append(it)
+                    for it in itertools.product([i], y_list, [k]):
+                        move.append(it)
+                    for it in itertools.product(x_list, [j], [k]):
+                        move.append(it)
+                    if num_direction_movement == 2 or num_direction_movement == 3:
+                        for it in itertools.product(x_list, y_list, [k]):
+                            move.append(it)
+                        for it in itertools.product([i], y_list, z_list):
+                            move.append(it)
+                        for it in itertools.product(x_list, [j], z_list):
+                            move.append(it)
+                    if num_direction_movement == 3:
+                        for it in itertools.product(x_list, y_list, z_list):
+                            move.append(it)
+                    for move_ in move:
+                        if grid[move_[0]][move_[1]][move_[2]] == -1:
+                            move.remove(move_)
+                    movement[(i, j, k)] = move
+    return movement
+
+
+def grid_2d_vertices(grid):
+    coor_ver = {}
+    counter = 1
+    for i in range(0, len(grid)):
+        for j in range(0, len(grid[0])):
+            coor_ver[(i, j)] = counter
+            counter += 1
+    return coor_ver
+
+
+def grid_3d_vertices(grid):
+    coor_ver = {}
+    counter = 1
+    for i in range(0, len(grid)):
+        for j in range(0, len(grid[0])):
+            for k in range(0, len(grid[0][0])):
+                coor_ver[(i, j, k)] = counter
+                counter += 1
+    return coor_ver
+
+
+def weight_grid_one_per_axis(movement, coor_ver):
+    edges = set()
+    for u in movement:
+        v_list = movement[u]
+        for v in v_list:
+            weight = abs(u[0] - v[0]) + abs(u[1] - v[1])
+            if len(u) == 3:
+                weight += abs(u[2] - v[2])
+            if weight == 1:
+                edges.add(EdgeWithValue(coor_ver[u], coor_ver[v], weight))
+            else:
+                edges.add(EdgeWithValue(coor_ver[u], coor_ver[v], math.sqrt(weight)))
+    return edges
+
+
+def weight_grid_random(movement, coor_ver, min_value, max_value):
+    edges = set()
+    for u in movement:
+        v_list = movement[u]
+        for v in v_list:
+            value = random.randint(min_value, max_value)
+            edges.add(EdgeWithValue(coor_ver[u], coor_ver[v], value))
+    return edges
+
+
