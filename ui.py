@@ -61,7 +61,7 @@ class GUI:
         self.t_vertices.delete(0, 'end')
         self.obj.set(objectives_options[0])
         self.edges_gen_methods.set(methods_options[0])
-        self.edges_gen_weights.set(weights_options[0])
+        self.edges_weights_method.set(weights_options[0])
         self.cb_bidirectional.deselect()
 
     # def disable_close(self):
@@ -364,29 +364,33 @@ class GUI:
                 if self.edges_percentage:
                     edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 self.edges_generated = adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1,
-                                                                           dest_directory,
-                                                                           objectives_ranges,
-                                                                           self.edges_gen_methods.get(), edges_number)
+                                                                           dest_directory, objectives_ranges,
+                                                                           coordinates, rnd_distance,
+                                                                           self.edges_weights_method.get(),
+                                                                           edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1,
-                                                                                    dest_directory,
-                                                                                    objectives_ranges,
-                                                                                    self.edges_gen_methods.get())
+                                                                                    dest_directory, objectives_ranges,
+                                                                                    coordinates, rnd_distance,
+                                                                                    self.edges_weights_method.get())
             elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
                 self.edges_generated = adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1,
-                                                                              dest_directory,
-                                                                              objectives_ranges,
-                                                                              self.edges_gen_methods.get(),
+                                                                              dest_directory, objectives_ranges,
+                                                                              coordinates, rnd_distance,
+                                                                              self.edges_weights_method.get(),
                                                                               self.edges_number_connected)
             elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
                 self.edges_generated = adapter.generate_flow_network(vertices_num, self.bidir.get() == 1,
                                                                      dest_directory, objectives_ranges,
-                                                                     self.edges_gen_methods.get(), self.edges_flow_src,
-                                                                     self.edges_flow_dst, self.edges_flow_paths)
+                                                                     coordinates, rnd_distance,
+                                                                     self.edges_weights_method.get(),
+                                                                     self.edges_flow_src, self.edges_flow_dst,
+                                                                     self.edges_flow_paths)
             elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
                 self.edges_generated = adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1,
                                                                         dest_directory, objectives_ranges,
-                                                                        self.edges_gen_methods.get(),
+                                                                        coordinates, rnd_distance,
+                                                                        self.edges_weights_method.get(),
                                                                         self.edges_number_bipartite,
                                                                         self.edges_bipartite1, self.edges_bipartite2)
             else:  # Grid
@@ -556,9 +560,9 @@ class GUI:
 
         Label(root, text="Edges Weights").grid(row=row_index, column=0, sticky=W)
 
-        self.edges_gen_weights = StringVar(root)
-        self.edges_gen_weights.set(weights_options[0])
-        self.om_edges_weights = OptionMenu(root, self.edges_gen_weights, *weights_options)
+        self.edges_weights_method = StringVar(root)
+        self.edges_weights_method.set(weights_options[0])
+        self.om_edges_weights = OptionMenu(root, self.edges_weights_method, *weights_options)
         self.om_edges_weights.config(width=25)
         self.om_edges_weights.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
