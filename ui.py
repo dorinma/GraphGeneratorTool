@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog as fd
 import tkinter.messagebox
 import os
+import read_write_io
 
 import adapter
 
@@ -59,7 +60,6 @@ class GUI:
 
     def clear(self):
         self.t_vertices.delete(0, 'end')
-        self.obj.set(objectives_options[0])
         self.edges_gen_methods.set(methods_options[0])
         self.edges_weights_method.set(weights_options[0])
         self.cb_bidirectional.deselect()
@@ -184,129 +184,186 @@ class GUI:
             self.t_edges_percentage.config(state='normal')
             self.t_edges_number.config(state='readonly')
 
-    def save_objectives(self, number):
-        num = int(number)
-        missing_params = False
-        # 1 objective
-        if self.t_min_o1.get() == '' or self.t_max_o1.get() == '':
-            missing_params = True
-        else:
-            self.min_o1 = int(self.t_min_o1.get())
-            self.max_o1 = int(self.t_max_o1.get())
+    def set_objectives_default(self):
+        self.objectives = read_write_io.read_config()
 
-        if num > 1:
-            # 2nd objective
-            if self.t_min_o2.get() == '' or self.t_max_o2.get() == '':
-                missing_params = True
-            else:
-                self.min_o2 = int(self.t_min_o2.get())
-                self.max_o2 = int(self.t_max_o2.get())
-            if num > 2:
-                # 3rd objective
-                if self.t_min_o3.get() == '' or self.t_max_o3.get() == '':
-                    missing_params = True
-                else:
-                    self.min_o3 = int(self.t_min_o3.get())
-                    self.max_o3 = int(self.t_max_o3.get())
-                if num > 3:
-                    # 4th objective
-                    if self.t_min_o4.get() == '' or self.t_max_o4.get() == '':
-                        missing_params = True
-                    else:
-                        self.min_o4 = int(self.t_min_o4.get())
-                        self.max_o4 = int(self.t_max_o4.get())
-                    if num > 4:
-                        # 5th objective
-                        if self.t_min_o5.get() == '' or self.t_max_o5.get() == '':
-                            missing_params = True
-                        else:
-                            self.min_o5 = int(self.t_min_o5.get())
-                            self.max_o5 = int(self.t_max_o5.get())
-        if missing_params:
-            tkinter.messagebox.showinfo("Missing parameters", "Please fill all fields then press \"Save\".",
-                                        parent=self.objectives_window)
-        elif validate_objective_range(self.min_o1, self.max_o1) and validate_objective_range(self.min_o2, self.max_o2) \
-                and validate_objective_range(self.min_o3, self.max_o3) and validate_objective_range(self.min_o4,
-                                                                                                    self.max_o4) \
-                and validate_objective_range(self.min_o5, self.max_o5):
-            self.objectives_window.destroy()
-        else:
-            tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max for all objectives.",
-                                        parent=self.objectives_window)
-
-    def open_objectives_window(self, num):
-        self.objectives_window = Toplevel(self.root)
-        self.objectives_window.title("Objectives")
-        win_width = int(num) * 25 + 60
-        self.objectives_window.geometry("250x" + str(win_width))
-        self.objectives_window.resizable(False, False)
-        self.objectives_number = num
-        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
-        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
-        # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
-
+    def set_objectives(self, index):
+        count = 1 + index
+        # First objective
+        self.objective_val_window = Toplevel(self.root)
+        self.objective_val_window.title(str(count))
+        self.objective_val_window.geometry("240x100")
+        self.objective_val_window.resizable(False, False)
+        self.objective_val_window.protocol("WM_DELETE_WINDOW", self.set_objectives_close_window)
         row = 0
-        Label(self.objectives_window, text="Insert min & max value for each objective:").grid(row=row, column=0,
-                                                                                              pady=2, columnspan=5)
+        curr_obj = list(self.objectives.keys())[index]
+        Label(self.objective_val_window, text=curr_obj).grid(row=row, column=0, columnspan=3, pady=4, sticky=W)
         row += 1
-        Label(self.objectives_window, text="#1").grid(row=row, column=0, padx=4, pady=2)
-        Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-        self.t_min_o1 = Prox(self.objectives_window, width=10)
-        self.t_min_o1.grid(row=row, column=2)
-        Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-        self.t_max_o1 = Prox(self.objectives_window, width=10)
-        self.t_max_o1.grid(row=row, column=4)
+        Label(self.objective_val_window, text="Min:").grid(row=row, column=0, pady=4, padx=4)
+        t_min_o = Prox(self.objective_val_window, width=10)
+        t_min_o.grid(row=row, column=1, pady=4)
 
-        if int(num) > 1:
-            row += 1
-            Label(self.objectives_window, text="#2").grid(row=row, column=0, padx=4, pady=2)
-            Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-            self.t_min_o2 = Prox(self.objectives_window, width=10)
-            self.t_min_o2.grid(row=row, column=2)
-            Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-            self.t_max_o2 = Prox(self.objectives_window, width=10)
-            self.t_max_o2.grid(row=row, column=4)
-
-            if int(num) > 2:
-                row += 1
-                Label(self.objectives_window, text="#3").grid(row=row, column=0, padx=4, pady=2)
-                Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-                self.t_min_o3 = Prox(self.objectives_window, width=10)
-                self.t_min_o3.grid(row=row, column=2)
-                Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-                self.t_max_o3 = Prox(self.objectives_window, width=10)
-                self.t_max_o3.grid(row=row, column=4)
-
-                if int(num) > 3:
-                    row += 1
-                    Label(self.objectives_window, text="#4").grid(row=row, column=0, padx=4, pady=2)
-                    Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-                    self.t_min_o4 = Prox(self.objectives_window, width=10)
-                    self.t_min_o4.grid(row=row, column=2)
-                    Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-                    self.t_max_o4 = Prox(self.objectives_window, width=10)
-                    self.t_max_o4.grid(row=row, column=4)
-
-                    if int(num) > 4:
-                        row += 1
-                        Label(self.objectives_window, text="#5").grid(row=row, column=0, padx=4, pady=2)
-                        Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
-                        self.t_min_o5 = Prox(self.objectives_window, width=10)
-                        self.t_min_o5.grid(row=row, column=2)
-                        Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
-                        self.t_max_o5 = Prox(self.objectives_window, width=10)
-                        self.t_max_o5.grid(row=row, column=4)
+        Label(self.objective_val_window, text="Max:").grid(row=row, column=2, pady=4, padx=4)
+        t_max_o = Prox(self.objective_val_window, width=10)
+        t_max_o.grid(row=row, column=3, pady=4)
         row += 1
-        Button(self.objectives_window, text="Save", command=lambda: self.save_objectives(num)).grid(row=row, column=0,
-                                                                                                    columnspan=5,
-                                                                                                    pady=2,
-                                                                                                    sticky=E)
+        Button(self.objective_val_window, text="Keep default", width=12,
+               command=lambda: self.save_objective_new_values(index, curr_obj, '-1', '-1')).grid(row=row, column=0,
+                                                                                                 pady=2, padx=4,
+                                                                                                 columnspan=2,
+                                                                                                 sticky=W)
+        Button(self.objective_val_window, text="Save", width=8,
+               command=lambda: self.save_objective_new_values(index, curr_obj, t_min_o.get(),
+                                                              t_max_o.get())).grid(row=row, column=3, pady=2, padx=4)
+
+    def set_objectives_close_window(self):
+        answer = tkinter.messagebox.askokcancel(
+            title='Confirm exit',
+            message='This will stop setting the objectives values. Exit?', parent=self.objective_val_window)
+        if answer:
+            self.objective_val_window.destroy()
+
+    def save_objective_new_values(self, index, key, min_, max_):
+        min_int, max_int = int(min_), int(max_)
+        if min_int <= max_int:
+            if min_int != -1 and max_int != -1:
+                self.objectives[key] = (min_int, max_int)
+            self.objective_val_window.destroy()
+            if index < len(self.objectives.keys()) - 1:
+                self.set_objectives(index + 1)
+        else:
+            tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max.",
+                                        parent=self.objective_val_window)
+
+    # def save_objectives(self, number):
+    #     num = int(number)
+    #     missing_params = False
+    #     # 1 objective
+    #     if self.t_min_o1.get() == '' or self.t_max_o1.get() == '':
+    #         missing_params = True
+    #     else:
+    #         self.min_o1 = int(self.t_min_o1.get())
+    #         self.max_o1 = int(self.t_max_o1.get())
+    #
+    #     if num > 1:
+    #         # 2nd objective
+    #         if self.t_min_o2.get() == '' or self.t_max_o2.get() == '':
+    #             missing_params = True
+    #         else:
+    #             self.min_o2 = int(self.t_min_o2.get())
+    #             self.max_o2 = int(self.t_max_o2.get())
+    #         if num > 2:
+    #             # 3rd objective
+    #             if self.t_min_o3.get() == '' or self.t_max_o3.get() == '':
+    #                 missing_params = True
+    #             else:
+    #                 self.min_o3 = int(self.t_min_o3.get())
+    #                 self.max_o3 = int(self.t_max_o3.get())
+    #             if num > 3:
+    #                 # 4th objective
+    #                 if self.t_min_o4.get() == '' or self.t_max_o4.get() == '':
+    #                     missing_params = True
+    #                 else:
+    #                     self.min_o4 = int(self.t_min_o4.get())
+    #                     self.max_o4 = int(self.t_max_o4.get())
+    #                 if num > 4:
+    #                     # 5th objective
+    #                     if self.t_min_o5.get() == '' or self.t_max_o5.get() == '':
+    #                         missing_params = True
+    #                     else:
+    #                         self.min_o5 = int(self.t_min_o5.get())
+    #                         self.max_o5 = int(self.t_max_o5.get())
+    #     if missing_params:
+    #         tkinter.messagebox.showinfo("Missing parameters", "Please fill all fields then press \"Save\".",
+    #                                     parent=self.objectives_window)
+    #     elif validate_objective_range(self.min_o1, self.max_o1) and validate_objective_range(self.min_o2, self.max_o2) \
+    #             and validate_objective_range(self.min_o3, self.max_o3) and validate_objective_range(self.min_o4,
+    #                                                                                                 self.max_o4) \
+    #             and validate_objective_range(self.min_o5, self.max_o5):
+    #         self.objectives_window.destroy()
+    #     else:
+    #         tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max for all objectives.",
+    #                                     parent=self.objectives_window)
+
+    # def open_objectives_window(self, num):
+    #     self.objectives_window = Toplevel(self.root)
+    #     self.objectives_window.title("Objectives")
+    #     win_width = int(num) * 25 + 60
+    #     self.objectives_window.geometry("250x" + str(win_width))
+    #     self.objectives_window.resizable(False, False)
+    #     self.objectives_number = num
+    #     self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
+    #     self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
+    #     # self.objectives_window.protocol("WM_DELETE_WINDOW", self.disable_close)
+    #
+    #     row = 0
+    #     Label(self.objectives_window, text="Insert min & max value for each objective:").grid(row=row, column=0,
+    #                                                                                           pady=2, columnspan=5)
+    #     row += 1
+    #     Label(self.objectives_window, text="#1").grid(row=row, column=0, padx=4, pady=2)
+    #     Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
+    #     self.t_min_o1 = Prox(self.objectives_window, width=10)
+    #     self.t_min_o1.grid(row=row, column=2)
+    #     Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
+    #     self.t_max_o1 = Prox(self.objectives_window, width=10)
+    #     self.t_max_o1.grid(row=row, column=4)
+    #
+    #     if int(num) > 1:
+    #         row += 1
+    #         Label(self.objectives_window, text="#2").grid(row=row, column=0, padx=4, pady=2)
+    #         Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
+    #         self.t_min_o2 = Prox(self.objectives_window, width=10)
+    #         self.t_min_o2.grid(row=row, column=2)
+    #         Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
+    #         self.t_max_o2 = Prox(self.objectives_window, width=10)
+    #         self.t_max_o2.grid(row=row, column=4)
+    #
+    #         if int(num) > 2:
+    #             row += 1
+    #             Label(self.objectives_window, text="#3").grid(row=row, column=0, padx=4, pady=2)
+    #             Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
+    #             self.t_min_o3 = Prox(self.objectives_window, width=10)
+    #             self.t_min_o3.grid(row=row, column=2)
+    #             Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
+    #             self.t_max_o3 = Prox(self.objectives_window, width=10)
+    #             self.t_max_o3.grid(row=row, column=4)
+    #
+    #             if int(num) > 3:
+    #                 row += 1
+    #                 Label(self.objectives_window, text="#4").grid(row=row, column=0, padx=4, pady=2)
+    #                 Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
+    #                 self.t_min_o4 = Prox(self.objectives_window, width=10)
+    #                 self.t_min_o4.grid(row=row, column=2)
+    #                 Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
+    #                 self.t_max_o4 = Prox(self.objectives_window, width=10)
+    #                 self.t_max_o4.grid(row=row, column=4)
+    #
+    #                 if int(num) > 4:
+    #                     row += 1
+    #                     Label(self.objectives_window, text="#5").grid(row=row, column=0, padx=4, pady=2)
+    #                     Label(self.objectives_window, text="min").grid(row=row, column=1, padx=6, pady=2)
+    #                     self.t_min_o5 = Prox(self.objectives_window, width=10)
+    #                     self.t_min_o5.grid(row=row, column=2)
+    #                     Label(self.objectives_window, text="max").grid(row=row, column=3, padx=4, pady=2)
+    #                     self.t_max_o5 = Prox(self.objectives_window, width=10)
+    #                     self.t_max_o5.grid(row=row, column=4)
+    #     row += 1
+    #     Button(self.objectives_window, text="Save", command=lambda: self.save_objectives(num)).grid(row=row, column=0,
+    #                                                                                                 columnspan=5,
+    #                                                                                                 pady=2,
+    #                                                                                                 sticky=E)
 
     def cb_query_min_edges(self):
         if self.query_min_edges.get() == 1:
             self.t_min_edges_between.config(state='normal')
         else:
             self.t_min_edges_between.config(state='readonly')
+
+    def cb_query_min_paths(self):
+        if self.query_min_paths.get() == 1:
+            self.t_min_paths_between.config(state='normal')
+        else:
+            self.t_min_paths_between.config(state='readonly')
 
     def cb_query_number(self):
         if self.query_rnd.get() == 1:
@@ -341,7 +398,8 @@ class GUI:
 
     def generate_queries(self):
         global dest_directory
-        self.selected_queries = [self.query_rnd.get(), -1, self.query_all.get(), self.query_min_edges.get(), -1]
+        self.selected_queries = [self.query_rnd.get(), -1, self.query_all.get(), self.query_min_edges.get(), -1,
+                                 self.query_min_paths.get(), -1]
         if self.validate_queries():
             print("[DEBUG] Generating queries...")
             adapter.generate_queries(self.vertices, self.edges_generated, self.selected_queries, dest_directory)
@@ -349,11 +407,6 @@ class GUI:
     def generate_graph(self):
         global dest_directory
 
-        objectives_ranges = [self.min_o1, self.max_o1, self.min_o2, self.max_o2, self.min_o3, self.max_o3,
-                             self.min_o4, self.max_o4, self.min_o5, self.max_o5]
-        if objectives_ranges[0] == -1:
-            tkinter.messagebox.showinfo("Invalid Input", "Insert objective values.")
-            return
         if self.validate_input():
             print("[DEBUG] Generating graph...")
             vertices_num = int(self.t_vertices.get())
@@ -364,31 +417,31 @@ class GUI:
                 if self.edges_percentage:
                     edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
                 self.edges_generated = adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1,
-                                                                           dest_directory, objectives_ranges,
+                                                                           dest_directory, self.objectives,
                                                                            coordinates, rnd_distance,
                                                                            self.edges_weights_method.get(),
                                                                            edges_number)
             elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
                 self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1,
-                                                                                    dest_directory, objectives_ranges,
+                                                                                    dest_directory, self.objectives,
                                                                                     coordinates, rnd_distance,
                                                                                     self.edges_weights_method.get())
             elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
                 self.edges_generated = adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1,
-                                                                              dest_directory, objectives_ranges,
+                                                                              dest_directory, self.objectives,
                                                                               coordinates, rnd_distance,
                                                                               self.edges_weights_method.get(),
                                                                               self.edges_number_connected)
             elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
                 self.edges_generated = adapter.generate_flow_network(vertices_num, self.bidir.get() == 1,
-                                                                     dest_directory, objectives_ranges,
+                                                                     dest_directory, self.objectives,
                                                                      coordinates, rnd_distance,
                                                                      self.edges_weights_method.get(),
                                                                      self.edges_flow_src, self.edges_flow_dst,
                                                                      self.edges_flow_paths)
             elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
                 self.edges_generated = adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1,
-                                                                        dest_directory, objectives_ranges,
+                                                                        dest_directory, self.objectives,
                                                                         coordinates, rnd_distance,
                                                                         self.edges_weights_method.get(),
                                                                         self.edges_number_bipartite,
@@ -485,23 +538,24 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("650x515")
+        self.root.geometry("690x550")
         self.root.resizable(False, False)
 
         # Objectives
-        self.objectives_number = 1
-        self.t_min_o1 = Prox()
-        self.t_min_o2 = Prox()
-        self.t_min_o3 = Prox()
-        self.t_min_o4 = Prox()
-        self.t_min_o5 = Prox()
-        self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
-        self.t_max_o1 = Prox()
-        self.t_max_o2 = Prox()
-        self.t_max_o3 = Prox()
-        self.t_max_o4 = Prox()
-        self.t_max_o5 = Prox()
-        self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
+        self.objectives = read_write_io.read_config()
+        # self.objectives_number = 1
+        # self.t_min_o1 = Prox()
+        # self.t_min_o2 = Prox()
+        # self.t_min_o3 = Prox()
+        # self.t_min_o4 = Prox()
+        # self.t_min_o5 = Prox()
+        # self.min_o1, self.min_o2, self.min_o3, self.min_o4, self.min_o5 = -1, -1, -1, -1, -1
+        # self.t_max_o1 = Prox()
+        # self.t_max_o2 = Prox()
+        # self.t_max_o3 = Prox()
+        # self.t_max_o4 = Prox()
+        # self.t_max_o5 = Prox()
+        # self.max_o1, self.max_o2, self.max_o3, self.max_o4, self.max_o5 = -1, -1, -1, -1, -1
 
         self.edges_number_full_random = 0
         self.edges_percentage_full_random = 0
@@ -526,31 +580,27 @@ class GUI:
 
         self.img = PhotoImage(file="config/1.png")
         self.img1 = self.img.subsample(1, 1)
-        self.c = Canvas(root, bg="black", height=470, width=270)
+        self.c = Canvas(root, bg="black", height=500, width=300)
         self.c.grid(row=0, column=3, rowspan=24, pady=2)
         self.c.create_image(50, 10, image=self.img1)
 
-        Label(root, text="Vertices #").grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
 
         self.t_vertices = Prox(root, width=15)
-        self.t_vertices.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        self.t_vertices.grid(row=row_index, column=1, padx=8, pady=4, sticky=W, columnspan=2)
 
         inc_row()
 
         Label(root, text="Objectives Values").grid(row=row_index, column=0, sticky=W)
 
         self.rb_obj_values = IntVar()
-        self.rb_obj_default = Radiobutton(root, text="Default", value=0, variable=self.rb_obj_values)
+        self.rb_obj_default = Radiobutton(root, text="Default", value=0, variable=self.rb_obj_values,
+                                          command=self.set_objectives_default)
         self.rb_obj_default.grid(row=row_index, column=1, padx=5, sticky=W)
 
-        self.rb_obj_set_values = Radiobutton(root, text="Set Values", value=1, variable=self.rb_obj_values)
+        self.rb_obj_set_values = Radiobutton(root, text="Set Values", value=1, variable=self.rb_obj_values,
+                                             command=lambda: self.set_objectives(0))
         self.rb_obj_set_values.grid(row=row_index, column=2, sticky=W)
-
-        # self.obj = StringVar(root)
-        # self.obj.set('- Select -')
-        # self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
-        # self.om_objectives.config(width=9)
-        # self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
@@ -645,7 +695,7 @@ class GUI:
 
         inc_row()
 
-        Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=NW, rowspan=3, pady=5)
+        Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=NW, rowspan=4, pady=3)
 
         self.query_rnd = IntVar()
         self.cb_query_rnd = Checkbutton(root, text="Random (#)", onvalue=1, offvalue=0, variable=self.query_rnd,
@@ -658,18 +708,28 @@ class GUI:
         inc_row()
 
         self.query_all = IntVar()
-        self.cb_query_rnd = Checkbutton(root, text="All Pairs", onvalue=1, offvalue=0, variable=self.query_all)
-        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        self.cb_query_all_pairs = Checkbutton(root, text="All Pairs", onvalue=1, offvalue=0, variable=self.query_all)
+        self.cb_query_all_pairs.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
         self.query_min_edges = IntVar()
-        self.cb_query_rnd = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0, variable=self.query_min_edges,
-                                        command=self.cb_query_min_edges)
-        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.cb_query_min_edges = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0,
+                                              variable=self.query_min_edges, command=self.cb_query_min_edges)
+        self.cb_query_min_edges.grid(row=row_index, column=1, padx=8, sticky=W)
 
         self.t_min_edges_between = Prox(root, width=10, state='readonly')
         self.t_min_edges_between.grid(row=row_index, column=2, padx=8, sticky=W)
+
+        inc_row()
+
+        self.query_min_paths = IntVar()
+        self.cb_query_min_paths = Checkbutton(root, text="Min Paths:", onvalue=1, offvalue=0,
+                                              variable=self.query_min_paths, command=self.cb_query_min_paths)
+        self.cb_query_min_paths.grid(row=row_index, column=1, padx=8, sticky=W)
+
+        self.t_min_paths_between = Prox(root, width=10, state='readonly')
+        self.t_min_paths_between.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
@@ -698,7 +758,8 @@ class GUI:
 
         inc_row()
 
-        self.b_generate = Button(root, text="Generate", command=self.generate_graph, width=9)
-        self.b_generate.grid(row=row_index, column=0, padx=8, sticky=W)
+        self.b_generate = Button(root, text="Generate graph", command=self.generate_graph, width=16, bg='black',
+                                 fg='white')
+        self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
         inc_row()

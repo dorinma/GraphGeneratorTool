@@ -1,4 +1,5 @@
 import generator
+import read_write_io
 import time
 
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
@@ -37,6 +38,10 @@ def generate_queries(vertices, edges, queries, dest_directory):
         generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
                                       generator.query_to_string((generator.query_pairs_at_least_x_edges(vertices, edges,
                                                                                                         queries[4]))))
+    if queries[5] == 1:  # min x paths
+        generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
+                                      generator.query_to_string((generator.query_pairs_at_least_x_paths(vertices, edges,
+                                                                                                        queries[6]))))
 
 
 def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
@@ -132,10 +137,6 @@ def flow_network(num_vertices, bi_directed, source_vertex, sink_vertex, num_of_p
     return edges
 
 
-def planar_connection(num_vertices, num_edges, max_value):
-    return 0
-
-
 def bipartite(num_vertices, bi_directed, num_edges, group1, group2):
     edges = generator.bipartite(num_vertices, num_edges, group1, group2)
     if bi_directed:
@@ -145,3 +146,7 @@ def bipartite(num_vertices, bi_directed, num_edges, group1, group2):
 
 def write_to_file_gr(path, edges):
     generator.write_to_file_gr(path + FILE_NAME_GR + str(get_curr_time()), edges)
+
+
+def get_objectives():
+    return read_write_io.read_config()
