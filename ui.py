@@ -69,6 +69,10 @@ class GUI:
     def open_edges_method_window(self, method):
         if method == methods_options[1]:  # Fully Connected Dense Graph - no params
             return
+        elif method == methods_options[4]:  # Grid - another window
+            self.om_edges_weights.config(state='disabled')
+            self.open_grid_window()
+            return
 
         self.edges_method_window = Toplevel(self.root)
         self.edges_method_window.title("Method Params")
@@ -152,12 +156,6 @@ class GUI:
             self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8, command=self.get_flow_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2)
 
-        elif method == methods_options[4]:  # Grid
-            # self.edges_weights_method = StringVar(self.root)
-            self.edges_weights_method.set(weights_options_grid[0])
-            self.om_edges_weights.option_clear()
-            self.om_edges_weights = OptionMenu(self.root, self.edges_weights_method, *weights_options_grid)
-
         elif method == methods_options[5]:  # Bipartite Graph
             Label(self.edges_method_window, text="Relation between sets of vertices, ").grid(row=row, column=0, padx=6,
                                                                                              pady=2, columnspan=2,
@@ -174,6 +172,22 @@ class GUI:
             self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8,
                                          command=self.get_bipartite_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2, sticky=E)
+
+    def open_grid_window(self):
+        self.grid_window = Toplevel(self.root)
+        self.grid_window.title("Grid Parameters")
+        self.grid_window.geometry("300x100")
+        self.grid_window.resizable(False, False)
+
+        row_index = 0
+        self.rb_grid_dim = IntVar()
+        self.rb_grid2d = Radiobutton(self.grid_window, text="2D", value=0, variable=self.rb_grid_dim,
+                                     command=self.set_objectives_default)
+        self.rb_grid2d.grid(row=row_index, column=0, padx=5, sticky=W)
+
+        self.rb_grid3d = Radiobutton(self.grid_window, text="3D", value=1, variable=self.rb_grid_dim,
+                                     command=lambda: self.set_objectives(0))
+        self.rb_grid3d.grid(row=row_index, column=1, sticky=W)
 
     def rb_add_edges(self):
         if self.edges_method_full_connected.get() == 1:
