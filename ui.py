@@ -485,7 +485,7 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("650x500")
+        self.root.geometry("650x515")
         self.root.resizable(False, False)
 
         # Objectives
@@ -524,10 +524,10 @@ class GUI:
         self.vertices = 0
         self.edges_generated = []
 
-        self.img = PhotoImage(file="tmp/1.png")
+        self.img = PhotoImage(file="config/1.png")
         self.img1 = self.img.subsample(1, 1)
         self.c = Canvas(root, bg="black", height=470, width=270)
-        self.c.grid(row=0, column=3, rowspan=20, pady=2)
+        self.c.grid(row=0, column=3, rowspan=24, pady=2)
         self.c.create_image(50, 10, image=self.img1)
 
         Label(root, text="Vertices #").grid(row=row_index, column=0, sticky=W)
@@ -537,13 +537,20 @@ class GUI:
 
         inc_row()
 
-        Label(root, text="Objectives #").grid(row=row_index, column=0, sticky=W)
+        Label(root, text="Objectives Values").grid(row=row_index, column=0, sticky=W)
 
-        self.obj = StringVar(root)
-        self.obj.set('- Select -')
-        self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
-        self.om_objectives.config(width=9)
-        self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        self.rb_obj_values = IntVar()
+        self.rb_obj_default = Radiobutton(root, text="Default", value=0, variable=self.rb_obj_values)
+        self.rb_obj_default.grid(row=row_index, column=1, padx=5, sticky=W)
+
+        self.rb_obj_set_values = Radiobutton(root, text="Set Values", value=1, variable=self.rb_obj_values)
+        self.rb_obj_set_values.grid(row=row_index, column=2, sticky=W)
+
+        # self.obj = StringVar(root)
+        # self.obj.set('- Select -')
+        # self.om_objectives = OptionMenu(root, self.obj, *objectives_options, command=self.open_objectives_window)
+        # self.om_objectives.config(width=9)
+        # self.om_objectives.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         inc_row()
 
@@ -669,6 +676,8 @@ class GUI:
         self.b_generate_queries = Button(root, text="Generate Queries", width=27, command=self.generate_queries)
         self.b_generate_queries.grid(row=row_index, column=1, padx=8, pady=2, columnspan=2)
 
+        inc_row()
+
         Label(root, text='').grid(row=row_index, column=0, columnspan=3)
 
         inc_row()
@@ -681,6 +690,7 @@ class GUI:
         self.b_clear.grid(row=row_index, column=2, padx=8, pady=2, sticky=E)
 
         inc_row()
+
         Label(root, text='').grid(row=row_index, column=0, columnspan=2)
 
         self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=10)
