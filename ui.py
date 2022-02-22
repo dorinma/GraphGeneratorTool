@@ -173,21 +173,118 @@ class GUI:
                                          command=self.get_bipartite_params)
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2, sticky=E)
 
+    def rb_grid_dims(self):
+        if self.rb_grid_dim.get() == 0:  # 2D
+            self.t_zs.config(state='readonly')
+        else:
+            self.t_zs.config(state='normal')
+
+    def rb_grid_edges(self):
+        if self.rb_grid_edges_method.get() == 0:  # Const weight
+            self.t_grid_rnd_weight_min.config(state='readonly')
+            self.t_grid_rnd_weight_max.config(state='readonly')
+        else:
+            self.t_grid_rnd_weight_min.config(state='normal')
+            self.t_grid_rnd_weight_max.config(state='normal')
+
     def open_grid_window(self):
         self.grid_window = Toplevel(self.root)
         self.grid_window.title("Grid Parameters")
-        self.grid_window.geometry("300x100")
+        self.grid_window.geometry("310x300")
         self.grid_window.resizable(False, False)
 
-        row_index = 0
+        row = 0
+
         self.rb_grid_dim = IntVar()
         self.rb_grid2d = Radiobutton(self.grid_window, text="2D", value=0, variable=self.rb_grid_dim,
-                                     command=self.set_objectives_default)
-        self.rb_grid2d.grid(row=row_index, column=0, padx=5, sticky=W)
+                                     command=self.rb_grid_dims)
+        self.rb_grid2d.grid(row=row, column=0, padx=5, pady=5, sticky=E)
 
         self.rb_grid3d = Radiobutton(self.grid_window, text="3D", value=1, variable=self.rb_grid_dim,
-                                     command=lambda: self.set_objectives(0))
-        self.rb_grid3d.grid(row=row_index, column=1, sticky=W)
+                                     command=self.rb_grid_dims)
+        self.rb_grid3d.grid(row=row, column=1, pady=5, sticky=W)
+
+        Label(self.grid_window, text="Movement in # axes").grid(row=row, column=2, pady=2, padx=5, sticky=EW,
+                                                                columnspan=2)
+
+        row += 1
+
+        Label(self.grid_window, text="Xs:").grid(row=row, column=0, pady=2, padx=5, sticky=W)
+
+        self.t_xs = Prox(self.grid_window, width=10)
+        self.t_xs.grid(row=row, column=1, padx=8, pady=2, sticky=W)
+
+        self.rb_grid_move_axes = IntVar()
+        self.rb_grid_move_1 = Radiobutton(self.grid_window, text="1", value=0, variable=self.rb_grid_move_axes,
+                                          command=self.rb_grid_edges)
+        self.rb_grid_move_1.grid(row=row, column=2, padx=5, sticky=EW, columnspan=2)
+
+        row += 1
+
+        Label(self.grid_window, text="Ys:").grid(row=row, column=0, pady=2, padx=5, sticky=W)
+
+        self.t_ys = Prox(self.grid_window, width=10)
+        self.t_ys.grid(row=row, column=1, padx=8, pady=2, sticky=W)
+
+        self.rb_grid_move_2 = Radiobutton(self.grid_window, text="2", value=1, variable=self.rb_grid_move_axes,
+                                          command=self.rb_grid_edges)
+        self.rb_grid_move_2.grid(row=row, column=2, padx=5, sticky=EW, columnspan=2)
+
+        row += 1
+
+        Label(self.grid_window, text="Zs:").grid(row=row, column=0, pady=2, padx=5, sticky=W)
+
+        self.t_zs = Prox(self.grid_window, width=10, state='readonly')
+        self.t_zs.grid(row=row, column=1, padx=8, pady=2, sticky=W)
+
+        self.rb_grid_move_3 = Radiobutton(self.grid_window, text="3", value=2, variable=self.rb_grid_move_axes,
+                                          command=self.rb_grid_edges, state='disabled')
+        self.rb_grid_move_3.grid(row=row, column=2, padx=5, sticky=EW, columnspan=2)
+
+        row += 1
+
+        Label(self.grid_window, text="").grid(row=row, column=0, columnspan=2)
+
+        row += 1
+
+        Label(self.grid_window, text="Blocks #").grid(row=row, column=0, padx=5, sticky=W)
+
+        self.t_grid_blocks = Prox(self.grid_window, width=10)
+        self.t_grid_blocks.grid(row=row, column=1, padx=8, pady=4, sticky=W)
+
+        row += 1
+
+        Label(self.grid_window, text="").grid(row=row, column=0, columnspan=3)
+
+        row += 1
+
+        Label(self.grid_window, text="Edges Weights:").grid(row=row, column=0, pady=4, padx=5, sticky=W, columnspan=2)
+
+        row += 1
+
+        self.rb_grid_edges_method = IntVar()
+        self.rb_grid_const_wight = Radiobutton(self.grid_window, text="By axis (1 per move)", value=0,
+                                               variable=self.rb_grid_edges_method, command=self.rb_grid_edges)
+        self.rb_grid_const_wight.grid(row=row, column=0, padx=5, sticky=W, columnspan=2)
+
+        row += 1
+
+        self.rb_grid_rnd_weight = Radiobutton(self.grid_window, text="Random", value=1,
+                                              variable=self.rb_grid_edges_method, command=self.rb_grid_edges)
+        self.rb_grid_rnd_weight.grid(row=row, column=0, padx=5, sticky=W, columnspan=2)
+
+        Label(self.grid_window, text="Min weight:").grid(row=row, column=2, pady=4, padx=5, sticky=W)
+
+        self.t_grid_rnd_weight_min = Prox(self.grid_window, width=10, state='readonly')
+        self.t_grid_rnd_weight_min.grid(row=row, column=3, padx=8, pady=4, sticky=W)
+
+        row += 1
+
+        Label(self.grid_window, text="Max weight:").grid(row=row, column=2, pady=4, padx=5, sticky=W)
+
+        self.t_grid_rnd_weight_max = Prox(self.grid_window, width=10, state='readonly')
+        self.t_grid_rnd_weight_max.grid(row=row, column=3, padx=8, pady=4, sticky=W)
+
 
     def rb_add_edges(self):
         if self.edges_method_full_connected.get() == 1:
