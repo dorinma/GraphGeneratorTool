@@ -449,46 +449,8 @@ class GUI:
     def generate_graph(self):
         global dest_directory
 
-        if self.validate_input():
-            print("[DEBUG] Generating graph...")
-            vertices_num = int(self.t_vertices.get())
-            coordinates = [self.long, self.long_diff, self.lat, self.lat_diff, self.alt, self.alt_diff]
-            rnd_distance = self.rb_coor.get() == 0  # Random
-            if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
-                edges_number = self.edges_number_full_random
-                if self.edges_percentage:
-                    edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
-                self.edges_generated = adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1,
-                                                                           dest_directory, self.objectives,
-                                                                           coordinates, rnd_distance,
-                                                                           self.edges_weights_method.get(),
-                                                                           edges_number)
-            elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-                self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1,
-                                                                                    dest_directory, self.objectives,
-                                                                                    coordinates, rnd_distance,
-                                                                                    self.edges_weights_method.get())
-            elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
-                self.edges_generated = adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1,
-                                                                              dest_directory, self.objectives,
-                                                                              coordinates, rnd_distance,
-                                                                              self.edges_weights_method.get(),
-                                                                              self.edges_number_connected)
-            elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
-                self.edges_generated = adapter.generate_flow_network(vertices_num, self.bidir.get() == 1,
-                                                                     dest_directory, self.objectives,
-                                                                     coordinates, rnd_distance,
-                                                                     self.edges_weights_method.get(),
-                                                                     self.edges_flow_src, self.edges_flow_dst,
-                                                                     self.edges_flow_paths)
-            elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
-                self.edges_generated = adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1,
-                                                                        dest_directory, self.objectives,
-                                                                        coordinates, rnd_distance,
-                                                                        self.edges_weights_method.get(),
-                                                                        self.edges_number_bipartite,
-                                                                        self.edges_bipartite1, self.edges_bipartite2)
-            else:  # Grid
+        if self.edges_gen_methods.get() == methods_options[4]:  # Grid
+            if self.validate_input_grid():
                 if not self.valid_grid_values:
                     tkinter.messagebox.showinfo(title='Missing parameters', message='Missing some grid params.')
                     return
@@ -502,8 +464,48 @@ class GUI:
                                                  self.grid_params.blocks, self.grid_params.axes_movement,
                                                  self.grid_params.movement_cost, self.grid_params.cost_min,
                                                  self.grid_params.cost_max, dest_directory)
+        else:
+            if self.validate_input_graphs():
+                print("[DEBUG] Generating graph...")
+                vertices_num = int(self.t_vertices.get())
+                coordinates = [self.long, self.long_diff, self.lat, self.lat_diff, self.alt, self.alt_diff]
+                rnd_distance = self.rb_coor.get() == 0  # Random
+                if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
+                    edges_number = self.edges_number_full_random
+                    if self.edges_percentage:
+                        edges_number = int((vertices_num * vertices_num) * self.edges_percentage_full_random / 100)
+                    self.edges_generated = adapter.generate_fully_random_graph(vertices_num, self.bidir.get() == 1,
+                                                                               dest_directory, self.objectives,
+                                                                               coordinates, rnd_distance,
+                                                                               self.edges_weights_method.get(),
+                                                                               edges_number)
+                elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
+                    self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1,
+                                                                                        dest_directory, self.objectives,
+                                                                                        coordinates, rnd_distance,
+                                                                                        self.edges_weights_method.get())
+                elif self.edges_gen_methods.get() == methods_options[2]:  # Fully Connected Graph
+                    self.edges_generated = adapter.generate_fully_connected_graph(vertices_num, self.bidir.get() == 1,
+                                                                                  dest_directory, self.objectives,
+                                                                                  coordinates, rnd_distance,
+                                                                                  self.edges_weights_method.get(),
+                                                                                  self.edges_number_connected)
+                elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network
+                    self.edges_generated = adapter.generate_flow_network(vertices_num, self.bidir.get() == 1,
+                                                                         dest_directory, self.objectives,
+                                                                         coordinates, rnd_distance,
+                                                                         self.edges_weights_method.get(),
+                                                                         self.edges_flow_src, self.edges_flow_dst,
+                                                                         self.edges_flow_paths)
+                elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph
+                    self.edges_generated = adapter.generate_bipartite_graph(vertices_num, self.bidir.get() == 1,
+                                                                            dest_directory, self.objectives,
+                                                                            coordinates, rnd_distance,
+                                                                            self.edges_weights_method.get(),
+                                                                            self.edges_number_bipartite,
+                                                                            self.edges_bipartite1, self.edges_bipartite2)
 
-    def validate_input(self):
+    def validate_input_graphs(self):
         if self.validate_vertices() and self.validate_coordinates():
             if not self.validate_params_edges_gen_method():
                 tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
@@ -512,6 +514,13 @@ class GUI:
                 return True
         else:
             return False
+
+    def validate_input_grid(self):
+        if not self.validate_params_edges_gen_method():
+            tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
+            return False
+        else:
+            return True
 
     def validate_coordinates(self):
         try:
