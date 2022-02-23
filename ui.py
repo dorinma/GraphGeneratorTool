@@ -4,8 +4,8 @@ import tkinter.messagebox
 
 import os
 import read_write_io
-
 import adapter
+import grid_params
 
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
@@ -73,6 +73,8 @@ class GUI:
             self.om_edges_weights.config(state='disabled')
             self.open_grid_window()
             return
+        else:
+            self.om_edges_weights.config(state='normal')
 
         self.edges_method_window = Toplevel(self.root)
         self.edges_method_window.title("Method Params")
@@ -176,8 +178,10 @@ class GUI:
     def rb_grid_dims(self):
         if self.rb_grid_dim.get() == 0:  # 2D
             self.t_zs.config(state='readonly')
+            self.rb_grid_move_3.config(state='disabled')
         else:
             self.t_zs.config(state='normal')
+            self.rb_grid_move_3.config(state='normal')
 
     def rb_grid_edges(self):
         if self.rb_grid_edges_method.get() == 0:  # Const weight
@@ -187,10 +191,31 @@ class GUI:
             self.t_grid_rnd_weight_min.config(state='normal')
             self.t_grid_rnd_weight_max.config(state='normal')
 
+    def set_grid_params(self):
+        if not self.validate_grid_params():
+            tkinter.messagebox.showinfo(title='Missing parameters',
+                                        message='Please make sure all fields are not empty.', parent=self.grid_window)
+        else:
+            self.valid_grid_values = True
+        return
+
+    def validate_grid_params(self):
+        xs, ys = self.t_xs.get(), self.t_ys.get()
+        if self.rb_grid_dim.get() == 1:
+            zs = self.t_zs.get()
+
+        blocks = 0  # Number of blocks on the grid
+        axes_movement = 0  # Movement is allowed in how many axes
+        movement_cost = 0  # 0 for const weight, 1 for random
+        cost_min, cost_max = -1, -1
+
+        self.grid_params = grid_params.Grid()
+        return False
+
     def open_grid_window(self):
         self.grid_window = Toplevel(self.root)
         self.grid_window.title("Grid Parameters")
-        self.grid_window.geometry("310x300")
+        self.grid_window.geometry("340x330")
         self.grid_window.resizable(False, False)
 
         row = 0
@@ -285,6 +310,10 @@ class GUI:
         self.t_grid_rnd_weight_max = Prox(self.grid_window, width=10, state='readonly')
         self.t_grid_rnd_weight_max.grid(row=row, column=3, padx=8, pady=4, sticky=W)
 
+        row += 1
+
+        self.b_set_grid_params = Button(self.grid_window, text="Set", command=self.set_grid_params, width=10)
+        self.b_set_grid_params.grid(row=row, column=0, padx=8, pady=2, sticky=E)
 
     def rb_add_edges(self):
         if self.edges_method_full_connected.get() == 1:
@@ -445,6 +474,8 @@ class GUI:
                                                                         self.edges_number_bipartite,
                                                                         self.edges_bipartite1, self.edges_bipartite2)
             else:  # Grid
+                if self.valid_grid_values:
+                    return
                 return
 
     def validate_input(self):
@@ -561,6 +592,8 @@ class GUI:
         self.alt_diff = ALT_DIFF
         self.vertices = 0
         self.edges_generated = []
+        self.valid_grid_values = False
+        self.grid_params = grid_params.Grid()
 
         self.img = PhotoImage(file="config/1.png")
         self.img1 = self.img.subsample(1, 1)
