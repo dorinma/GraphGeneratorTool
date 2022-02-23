@@ -21,7 +21,7 @@ from matplotlib.figure import Figure
 #     plt.savefig('open_list.png')
 #     plt.show()
 
-def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, y_label):
+def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index):
     fig = Figure(figsize=(5, 4), dpi=100)
     ax = fig.add_subplot()
     curr = dict_[index]

@@ -617,11 +617,7 @@ class GUI:
         self.edges_bipartite_txt = self.t_edge_relation.get("1.0", END)
         self.edges_method_window.destroy()
 
-    def display_grid(self):
-        fig = grid_view.get_graph_image_by_index_2(read_write_io.read_json(), 0, 20, 0, 20, "1", "temp", "temp2")
-
-        canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
-        canvas.draw()
+    def modify_toolitems(self):
         mpl.rcParams['toolbar'] = 'None'
         backend_bases.NavigationToolbar2.toolitems = (
             ('Home', 'Reset original view', 'home', 'home'),
@@ -632,34 +628,44 @@ class GUI:
             (None, None, None, None),
             ('Save', 'Save the figure', 'filesave', 'save_figure'),
         )
-        # pack_toolbar=False will make it easier to use a layout manager later on.
-        toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
-        # toolbar.children['configure_subplots'].pack_forget() # configure_subplots
 
-        toolbar.update()
-        canvas.mpl_connect(
-            "key_press_event", lambda event: print(f"you pressed {event.key}"))
-        canvas.mpl_connect("key_press_event", key_press_handler)
+    def get_next_img(self):
+        self.b_prev_img.config(state='normal')
+        self.img_index += 1
+        self.display_grid(self.img_index)
 
-        # button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
+    def get_prev_img(self):
+        self.b_next_img.config('normal')
+        if self.img_index == 1:
+            self.b_prev_img.config(state='disabled')
+        self.img_index -= 1
+        self.display_grid(self.img_index)
+        return
 
-        # def update_frequency(new_val):
-        #     # retrieve frequency
-        #     f = float(new_val)
-        #
-        #     # update data
-        #     y = 2 * np.sin(2 * np.pi * f * t)
-        #     line.set_data(t, y)
-        #
-        #     # required to update canvas and attached toolbar!
-        #     canvas.draw()
-        #
-        # slider_update = tkinter.Scale(root, from_=1, to=5, orient=tkinter.HORIZONTAL,
-        #                               command=update_frequency, label="Frequency [Hz]")
+    def disable_all(self):
+        self.b_generate.config(state='disabled')
+        self.b_generate_queries.config(state='disabled')
+        self.om_edges_methods.config(state='disabled')
+        self.om_edges_weights.config(state='disabled')
 
-        # slider_update.grid(row=0, column=3, pady=2, padx=4)
-        canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18)
-        toolbar.grid(row=18, column=3, pady=2, padx=4)
+    def display_grid(self, index):
+        json_dict = read_write_io.read_json()
+        if json_dict.__contains__(str(index)):
+            fig = grid_view.get_graph_image_by_index(json_dict, 0, 20, 0, 20, str(index))
+
+            canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
+            canvas.draw()
+
+            toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
+
+            toolbar.update()
+            canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
+            canvas.mpl_connect("key_press_event", key_press_handler)
+
+            canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18, columnspan=2)
+            toolbar.grid(row=18, column=3, columnspan=2, pady=2, padx=4)
+            if not json_dict.__contains__(str(index + 1)):
+                self.b_next_img.config('disabled')
 
     def __init__(self, root):
         self.root = root
@@ -685,6 +691,7 @@ class GUI:
         self.edges_generated = []
         self.valid_grid_values = False
         self.grid_params = grid_params.Grid()
+        self.img_index = 1
 
         # TESTING
         # self.img = PhotoImage(file="resources/1.png")
@@ -695,7 +702,8 @@ class GUI:
 
         # -------------------------------------------------------------------------------------------------------------
 
-        self.display_grid()
+        self.modify_toolitems()
+        self.display_grid(self.img_index)
 
         # -------------------------------------------------------------------------------------------------------------
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
@@ -870,6 +878,12 @@ class GUI:
         self.b_clear = Button(root, text="Save To", command=get_dest_directory, width=10)
         self.b_clear.grid(row=row_index, column=2, padx=8, pady=2, sticky=E)
 
+        self.b_prev_img = Button(root, text="Prev", command=self.get_prev_img, width=10, state='disabled')
+        self.b_prev_img.grid(row=row_index, column=3, padx=8, pady=2, sticky=E)
+
+        self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
+        self.b_next_img.grid(row=row_index, column=4, padx=8, pady=2, sticky=W)
+
         inc_row()
 
         self.b_generate = Button(root, text="Generate graph", command=self.generate_graph, width=16, bg='black',
@@ -877,3 +891,8 @@ class GUI:
         self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
         inc_row()
+
+        if len(self.objectives) == 0:
+            tkinter.messagebox.showinfo("Read config failed", "Could not read objectives file, please check it and "
+                                                              "re-run the program.")
+            self.disable_all()

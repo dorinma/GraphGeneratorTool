@@ -57,16 +57,17 @@ def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
 
 
 def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
-    for i in range(0, len(objectives_ranges) - 1, 2):
-        if objectives_ranges[i] > -1:  # This objective exists
-            weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, objectives_ranges[i],
-                                                    objectives_ranges[i + 1])
-            write_to_files(dest_directory, vertices, weighted_edges)
+    for obj in objectives_ranges:
+        if objectives_ranges[obj][0] > -1:  # This objective exists
+            weighted_edges = generate_edges_weights(vertices, edges, edges_weights_method, objectives_ranges[obj][0],
+                                                    objectives_ranges[obj][1])
+            write_to_files(dest_directory, "by" + obj + "_", vertices, weighted_edges)
 
 
-def write_to_files(path, vertices, edges):
+def write_to_files(path, obj_type, vertices, edges):
     time_stamp = str(get_curr_time())
-    read_write_io.write_to_file_gr(path + FILE_NAME_GR + time_stamp, generator.gr_input_to_string(vertices, edges))
+    read_write_io.write_to_file_gr(path + FILE_NAME_GR + obj_type + time_stamp, generator.gr_input_to_string(vertices,
+                                                                                                             edges))
 
 
 def generate_fully_random_graph(vertices, bi_directed, dest_directory, objectives_ranges, coordinates, rnd_distance,
@@ -185,4 +186,3 @@ def generate_grid_files(edges, coordinates, dest_directory):
     full_path_co = dest_directory + FILE_NAME_CO + time_stamp
     read_write_io.write_to_file_gr(full_path_gr, generator.gr_input_to_string(len(coordinates), edges))
     read_write_io.write_to_file_co(full_path_co, generator.co_grid_input_to_string(coordinates))
-
