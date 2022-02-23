@@ -68,6 +68,7 @@ class GUI:
 
     def open_edges_method_window(self, method):
         if method == methods_options[1]:  # Fully Connected Dense Graph - no params
+            self.om_edges_weights.config(state='normal')
             return
         elif method == methods_options[4]:  # Grid - another window
             self.om_edges_weights.config(state='disabled')
@@ -192,25 +193,39 @@ class GUI:
             self.t_grid_rnd_weight_max.config(state='normal')
 
     def set_grid_params(self):
-        if not self.validate_grid_params():
+        if not self.validate_and_set_grid_params():
             tkinter.messagebox.showinfo(title='Missing parameters',
                                         message='Please make sure all fields are not empty.', parent=self.grid_window)
         else:
             self.valid_grid_values = True
-        return
+            self.grid_window.destroy()
 
-    def validate_grid_params(self):
-        xs, ys = self.t_xs.get(), self.t_ys.get()
-        if self.rb_grid_dim.get() == 1:
-            zs = self.t_zs.get()
-
-        blocks = 0  # Number of blocks on the grid
-        axes_movement = 0  # Movement is allowed in how many axes
-        movement_cost = 0  # 0 for const weight, 1 for random
+    def validate_and_set_grid_params(self):
+        dim = 2
         cost_min, cost_max = -1, -1
-
-        self.grid_params = grid_params.Grid()
-        return False
+        if self.rb_grid_dim.get() == 1:
+            dim = 3
+        if self.t_xs.get() == '' or self.t_ys.get() == '' or (dim == 3 and self.t_zs.get() == ''):
+            return False
+        else:
+            xs, ys = int(self.t_xs.get()), int(self.t_ys.get())
+            if dim == 3:
+                zs = int(self.t_zs.get())
+            else:
+                zs = 0
+            if self.t_grid_blocks.get() != '':
+                blocks = int(self.t_grid_blocks.get())
+            else:
+                blocks = 0
+            axes_movement = self.rb_grid_move_axes.get() + 1
+            movement_cost = self.rb_grid_edges_method.get()  # 0 for const weight, 1 for random
+            if movement_cost == 1:
+                if self.t_grid_rnd_weight_min.get() != '' and self.t_grid_rnd_weight_min.get() != '':
+                    cost_min, cost_max = int(self.t_grid_rnd_weight_min.get()), int(self.t_grid_rnd_weight_max.get())
+                else:
+                    return False
+            self.grid_params.set_values(dim, xs, ys, zs, blocks, axes_movement, movement_cost, cost_min, cost_max)
+            return True
 
     def open_grid_window(self):
         self.grid_window = Toplevel(self.root)
@@ -474,9 +489,19 @@ class GUI:
                                                                         self.edges_number_bipartite,
                                                                         self.edges_bipartite1, self.edges_bipartite2)
             else:  # Grid
-                if self.valid_grid_values:
+                if not self.valid_grid_values:
+                    tkinter.messagebox.showinfo(title='Missing parameters', message='Missing some grid params.')
                     return
-                return
+                else:
+                    if self.grid_params.get_grid_dim() == 2:
+                        adapter.generate_2d_grid(self.grid_params.xs, self.grid_params.ys, self.grid_params.blocks,
+                                                 self.grid_params.axes_movement, self.grid_params.movement_cost,
+                                                 self.grid_params.cost_min, self.grid_params.cost_max, dest_directory)
+                    else:
+                        adapter.generate_3d_grid(self.grid_params.xs, self.grid_params.ys, self.grid_params.zs,
+                                                 self.grid_params.blocks, self.grid_params.axes_movement,
+                                                 self.grid_params.movement_cost, self.grid_params.cost_min,
+                                                 self.grid_params.cost_max, dest_directory)
 
     def validate_input(self):
         if self.validate_vertices() and self.validate_coordinates():
@@ -526,11 +551,16 @@ class GUI:
                 return False
             else:
                 return True
-        elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network - src, dst, paths #
+        elif self.edges_gen_methods.get() == methods_options[3]:  # Flow Network - src, dst, paths#
             if self.edges_flow_src > 0 and self.edges_flow_dst > 0 and self.edges_flow_paths > 0:
                 return True
             else:
                 return False
+        elif self.edges_gen_methods.get() == methods_options[4]:  # Grid - grid params
+            if self.grid_params.xs == 0:    # no parameters inserted
+                return False
+            else:
+                return True
         elif self.edges_gen_methods.get() == methods_options[5]:  # Bipartite Graph - x:y
             try:
                 values = str(self.edges_bipartite_txt).split(":")

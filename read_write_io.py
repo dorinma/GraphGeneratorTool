@@ -21,3 +21,33 @@ def read_config():
     except:
         print("[ERROR] Could not read config file.")
     return objectives
+
+
+def write_to_file_gr(full_path, edges):
+    try:
+        file = open(full_path + ".gr", 'w')
+        file.writelines(edges)
+        file.close()
+        print("[INFO] Saved output to " + full_path)
+    except:
+        print("[ERROR] Could not write .gr file.")
+
+
+def write_to_file_co(full_path, edges):
+    try:
+        file = open(full_path + '.co', 'w')
+        file.writelines(edges)
+        file.close()
+        print("[INFO] Saved output to " + full_path)
+    except:
+        print("[ERROR] Could not write .co file.")
+
+
+def write_to_file_query(full_path, edges):
+    try:
+        file = open(full_path, 'w')
+        file.writelines(edges)
+        file.close()
+        print("[INFO] Saved output to " + full_path)
+    except:
+        print("[ERROR] Could not write query file.")

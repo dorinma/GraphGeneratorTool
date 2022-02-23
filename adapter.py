@@ -2,11 +2,12 @@ import generator
 import read_write_io
 import time
 
-methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
-                   'Planar Connection', 'Grid Connection', 'Bipartite Graph')
 weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
+# methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
+#                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
 # queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 FILE_NAME_GR = "graph_"
+FILE_NAME_GRID = "grid_"
 FILE_NAME_CO = "coordinates_"
 FILE_NAME_Q_RND = "query_random_"
 FILE_NAME_Q_ALL = "query_all_pairs_"
@@ -29,19 +30,21 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
 def generate_queries(vertices, edges, queries, dest_directory):
     time_stamp = str(get_curr_time())
     if queries[0] == 1:  # random
-        generator.write_to_file_query(dest_directory + FILE_NAME_Q_RND + time_stamp,
-                                      generator.query_to_string(generator.query_random(vertices, queries[1])))
+        read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_RND + time_stamp,
+                                          generator.query_to_string(generator.query_random(vertices, queries[1])))
     if queries[2] == 1:  # all pairs
-        generator.write_to_file_query(dest_directory + FILE_NAME_Q_ALL + time_stamp,
-                                      generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
+        read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_ALL + time_stamp,
+                                          generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
     if queries[3] == 1:  # min x edges
-        generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
-                                      generator.query_to_string((generator.query_pairs_at_least_x_edges(vertices, edges,
-                                                                                                        queries[4]))))
+        read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
+                                          generator.query_to_string(
+                                              (generator.query_pairs_at_least_x_edges(vertices, edges,
+                                                                                      queries[4]))))
     if queries[5] == 1:  # min x paths
-        generator.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
-                                      generator.query_to_string((generator.query_pairs_at_least_x_paths(vertices, edges,
-                                                                                                        queries[6]))))
+        read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
+                                          generator.query_to_string(
+                                              (generator.query_pairs_at_least_x_paths(vertices, edges,
+                                                                                      queries[6]))))
 
 
 def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
@@ -50,7 +53,7 @@ def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
         coors = generator.gen_coordinate_by_range(vertices, long, long_max_diff, lat, lat_max_diff, alt, alt_max_diff)
     else:
         coors = generator.gen_coordinate_by_index(vertices, long, long_max_diff, lat, lat_max_diff, alt, alt_max_diff)
-    generator.write_to_file_co(path + FILE_NAME_CO + str(get_curr_time()), generator.co_input_to_string(coors))
+    read_write_io.write_to_file_co(path + FILE_NAME_CO + str(get_curr_time()), generator.co_input_to_string(coors))
 
 
 def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weights_method, dest_directory):
@@ -63,7 +66,7 @@ def weight_edges_and_write_files(vertices, edges, objectives_ranges, edges_weigh
 
 def write_to_files(path, vertices, edges):
     time_stamp = str(get_curr_time())
-    generator.write_to_file_gr(path + FILE_NAME_GR + time_stamp, generator.gr_input_to_string(vertices, edges))
+    read_write_io.write_to_file_gr(path + FILE_NAME_GR + time_stamp, generator.gr_input_to_string(vertices, edges))
 
 
 def generate_fully_random_graph(vertices, bi_directed, dest_directory, objectives_ranges, coordinates, rnd_distance,
@@ -145,8 +148,41 @@ def bipartite(num_vertices, bi_directed, num_edges, group1, group2):
 
 
 def write_to_file_gr(path, edges):
-    generator.write_to_file_gr(path + FILE_NAME_GR + str(get_curr_time()), edges)
+    read_write_io.write_to_file_gr(path + FILE_NAME_GR + str(get_curr_time()), edges)
 
 
 def get_objectives():
     return read_write_io.read_config()
+
+
+def generate_2d_grid(xs, ys, blocks, movement_in_axes, movement_weight, min_weight, max_weight, dest_directory):
+    grid = generator.crate_2d_grid(xs, ys, blocks)
+    movement = generator.movement_2d_grid(grid, movement_in_axes)
+    vertices = generator.grid_2d_vertices(grid)
+    if movement_weight == 0:
+        edges = generator.weight_grid_one_per_axis(movement, vertices)
+    else:
+        edges = generator.weight_grid_random(movement, vertices, min_weight, max_weight)
+    generate_grid_files(edges, vertices, dest_directory)
+    return edges
+
+
+def generate_3d_grid(xs, ys, zs, blocks, movement_in_axes, movement_weight, min_weight, max_weight, dest_directory):
+    grid = generator.crate_3d_grid(xs, ys, zs, blocks)
+    movement = generator.movement_3d_grid(grid, movement_in_axes)
+    vertices = generator.grid_3d_vertices(grid)
+    if movement_weight == 0:
+        edges = generator.weight_grid_one_per_axis(movement, vertices)
+    else:
+        edges = generator.weight_grid_random(movement, vertices, min_weight, max_weight)
+    generate_grid_files(edges, vertices, dest_directory)
+    return edges
+
+
+def generate_grid_files(edges, coordinates, dest_directory):
+    time_stamp = str(get_curr_time())
+    full_path_gr = dest_directory + FILE_NAME_GRID + time_stamp
+    full_path_co = dest_directory + FILE_NAME_CO + time_stamp
+    read_write_io.write_to_file_gr(full_path_gr, generator.gr_input_to_string(len(coordinates), edges))
+    read_write_io.write_to_file_co(full_path_co, generator.co_grid_input_to_string(coordinates))
+

@@ -1,4 +1,5 @@
 class Grid:
+    dimension = 2
     xs, ys, zs = 0, 0, 0
     blocks = 0  # Number of blocks on the grid
     axes_movement = 0   # Movement is allowed in how many axes
@@ -8,8 +9,13 @@ class Grid:
     def __init__(self):
         pass
 
-    def set_values(self, xs, ys, zs, blocks, axes_movement, movement_cost, cost_min, cost_max):
-        self.xs, self.ys, self.zs, blocks, self.axes_movement, self.movement_cost = xs, ys, zs, blocks, axes_movement, \
-                                                                                    movement_cost
+    def set_values(self, dimension, xs, ys, zs, blocks, axes_movement, movement_cost, cost_min, cost_max):
+        self.dimension, self.xs, self.ys, self.zs, blocks, self.axes_movement, self.movement_cost = dimension, xs, ys, \
+                                                                                                    zs, blocks, \
+                                                                                                    axes_movement, \
+                                                                                                    movement_cost
         if movement_cost == 1:
             self.cost_min, self.cost_max = cost_min, cost_max
+
+    def get_grid_dim(self):
+        return self.dimension
