@@ -1,39 +1,36 @@
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from matplotlib import cm
-import imageio
+from matplotlib.figure import Figure
 
-
-# {index: {open: [], exp: < x, y >, childs: []...}
-# dict = {}
-# open = [(1,2), (2,4), (3,6)]
-# exp = (6,8)
-# childs = [(2,3), (3,4), (4,5)]
-# dict["open"] = open
-# dict["exp"] = exp
-# dict["childs"] = childs
-
+# def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, y_label):
+#     x = np.arange(start=0.  # upper limit
+#                   , stop=6.  # lower limit
+#                   , step=0.1  # step-size (distance between the points)
+#                   )  # generate points between start and stop with distances of step apart from each other
+#
+#     plt.figure()  # generates a new figure as in MATLAB
+#     plt.subplot()
+#     curr = dict_[index]
+#     for o in curr["Open"]:
+#         plt.plot(o[0], o[1], 'bo', markersize=9)  # plot with color blue, as points
+#     plt.plot(curr["Exp"][0], curr["Exp"][1], 'r^', markersize=12)
+#     for c in curr["Children"]:
+#         plt.plot(c[0], c[1], 'co', markersize=9)
+#     plt.xlabel("x")
+#     plt.ylabel("y")
+#     plt.axis([min_x, max_x, min_y, max_y])  # [xmin, xmax, ymin, ymax]
+#     plt.title(str(index))
+#     plt.savefig('open_list.png')
+#     plt.show()
 
 def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, y_label):
-    x = np.arange(start=0.  # upper limit
-                  , stop=6.  # lower limit
-                  , step=0.1  # step-size (distance between the points)
-                  )  # generate points between start and stop with distances of step apart from each other
-
-    plt.figure()  # generates a new figure as in MATLAB
-    plt.subplot()
-    dict = dict_[index]
-    for o in dict["open"]:
-        plt.plot(o[0], o[1], 'bo', markersize=9)  # plot with color blue, as points
-    plt.plot(dict["exp"][0], dict["exp"][1], 'r^', markersize=12)
-    for c in dict["childs"]:
-        plt.plot(c[0], c[1], 'co', markersize=9)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.axis([min_x, max_x, min_y, max_y])  # [xmin, xmax, ymin, ymax]
-    plt.title(str(index))
-    plt.savefig('open_list.png')
-    plt.show()
+    fig = Figure(figsize=(5, 4), dpi=100)
+    ax = fig.add_subplot()
+    curr = dict_[index]
+    for o in curr["Open"]:
+        ax.plot(o[0], o[1], 'bo', markersize=4)  # plot with color blue, as points
+    ax.plot(curr["Exp"][0], curr["Exp"][1], 'r^', markersize=6)
+    for c in curr["Children"]:
+        ax.plot(c[0], c[1], 'co', markersize=4)
+    ax.axis([min_x, max_x, min_y, max_y])  # [xmin, xmax, ymin, ymax]
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    return fig

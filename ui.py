@@ -1,11 +1,23 @@
 from tkinter import *
 from tkinter import filedialog as fd
 import tkinter.messagebox
-
 import os
+import matplotlib as mpl
+
+mpl.use('TkAgg')
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg,
+    NavigationToolbar2Tk
+)
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+from matplotlib import backend_bases
+import numpy as np
+
 import read_write_io
 import adapter
 import grid_params
+import grid_view
 
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
@@ -480,7 +492,8 @@ class GUI:
                                                                                self.edges_weights_method.get(),
                                                                                edges_number)
                 elif self.edges_gen_methods.get() == methods_options[1]:  # Fully Connected Dense Graph
-                    self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num, self.bidir.get() == 1,
+                    self.edges_generated = adapter.generate_fully_connected_dense_graph(vertices_num,
+                                                                                        self.bidir.get() == 1,
                                                                                         dest_directory, self.objectives,
                                                                                         coordinates, rnd_distance,
                                                                                         self.edges_weights_method.get())
@@ -503,7 +516,8 @@ class GUI:
                                                                             coordinates, rnd_distance,
                                                                             self.edges_weights_method.get(),
                                                                             self.edges_number_bipartite,
-                                                                            self.edges_bipartite1, self.edges_bipartite2)
+                                                                            self.edges_bipartite1,
+                                                                            self.edges_bipartite2)
 
     def validate_input_graphs(self):
         if self.validate_vertices() and self.validate_coordinates():
@@ -566,7 +580,7 @@ class GUI:
             else:
                 return False
         elif self.edges_gen_methods.get() == methods_options[4]:  # Grid - grid params
-            if self.grid_params.xs == 0:    # no parameters inserted
+            if self.grid_params.xs == 0:  # no parameters inserted
                 return False
             else:
                 return True
@@ -603,25 +617,64 @@ class GUI:
         self.edges_bipartite_txt = self.t_edge_relation.get("1.0", END)
         self.edges_method_window.destroy()
 
+    def display_grid(self):
+        fig = grid_view.get_graph_image_by_index_2(read_write_io.read_json(), 0, 20, 0, 20, "1", "temp", "temp2")
+
+        canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
+        canvas.draw()
+        mpl.rcParams['toolbar'] = 'None'
+        backend_bases.NavigationToolbar2.toolitems = (
+            ('Home', 'Reset original view', 'home', 'home'),
+            ('Back', 'Back to  previous view', 'back', 'back'),
+            ('Forward', 'Forward to next view', 'forward', 'forward'),
+            (None, None, None, None),
+            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+            (None, None, None, None),
+            ('Save', 'Save the figure', 'filesave', 'save_figure'),
+        )
+        # pack_toolbar=False will make it easier to use a layout manager later on.
+        toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
+        # toolbar.children['configure_subplots'].pack_forget() # configure_subplots
+
+        toolbar.update()
+        canvas.mpl_connect(
+            "key_press_event", lambda event: print(f"you pressed {event.key}"))
+        canvas.mpl_connect("key_press_event", key_press_handler)
+
+        # button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
+
+        # def update_frequency(new_val):
+        #     # retrieve frequency
+        #     f = float(new_val)
+        #
+        #     # update data
+        #     y = 2 * np.sin(2 * np.pi * f * t)
+        #     line.set_data(t, y)
+        #
+        #     # required to update canvas and attached toolbar!
+        #     canvas.draw()
+        #
+        # slider_update = tkinter.Scale(root, from_=1, to=5, orient=tkinter.HORIZONTAL,
+        #                               command=update_frequency, label="Frequency [Hz]")
+
+        # slider_update.grid(row=0, column=3, pady=2, padx=4)
+        canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18)
+        toolbar.grid(row=18, column=3, pady=2, padx=4)
+
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("690x550")
+        self.root.geometry("890x570")  # (width, height)
         self.root.resizable(False, False)
 
         # Variables
         self.objectives = read_write_io.read_config()
-        self.edges_number_full_random = 0
-        self.edges_percentage_full_random = 0
+        self.edges_number_full_random, self.edges_percentage_full_random, self.edges_number_connected, \
+        self.edges_flow_src, self.edges_flow_dst, self.edges_flow_paths, self.edges_bipartite1, \
+        self.edges_bipartite2, self.edges_bipartite_txt, self.edges_number_bipartite, self.vertices = 0, 0, 0, 0, \
+                                                                                                      0, 0, 0, 0, \
+                                                                                                      0, 0, 0
         self.edges_percentage = False
-        self.edges_number_connected = 0
-        self.edges_flow_src = 0
-        self.edges_flow_dst = 0
-        self.edges_flow_paths = 0
-        self.edges_bipartite1 = 0
-        self.edges_bipartite2 = 0
-        self.edges_bipartite_txt = 0
-        self.edges_number_bipartite = 0
         self.selected_queries = [0, 0, 0, 0, 0]
         self.long = LONG
         self.long_diff = COOR_DIFF
@@ -629,17 +682,22 @@ class GUI:
         self.lat_diff = COOR_DIFF
         self.alt = ALT
         self.alt_diff = ALT_DIFF
-        self.vertices = 0
         self.edges_generated = []
         self.valid_grid_values = False
         self.grid_params = grid_params.Grid()
 
-        self.img = PhotoImage(file="config/1.png")
-        self.img1 = self.img.subsample(1, 1)
-        self.c = Canvas(root, bg="black", height=500, width=300)
-        self.c.grid(row=0, column=3, rowspan=24, pady=2)
-        self.c.create_image(50, 10, image=self.img1)
+        # TESTING
+        # self.img = PhotoImage(file="resources/1.png")
+        # self.img1 = self.img.subsample(1, 1)
+        # self.c = Canvas(root, bg="black", height=500, width=300)
+        # self.c.grid(row=0, column=3, rowspan=24, pady=2)
+        # self.c.create_image(50, 10, image=self.img1)
 
+        # -------------------------------------------------------------------------------------------------------------
+
+        self.display_grid()
+
+        # -------------------------------------------------------------------------------------------------------------
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
 
         self.t_vertices = Prox(root, width=15)
