@@ -6,14 +6,16 @@ import matplotlib.image as mpimg
 from matplotlib import cm
 import imageio
 
-#{index: {open: [], exp: < x, y >, childs: []...}
-    #dict = {}
-    #open = [(1,2), (2,4), (3,6)]
-    #exp = (6,8)
-    #childs = [(2,3), (3,4), (4,5)]
-    #dict["open"] = open
-    #dict["exp"] = exp
-    #dict["childs"] = childs
+
+# {index: {open: [], exp: < x, y >, childs: []...}
+# dict = {}
+# open = [(1,2), (2,4), (3,6)]
+# exp = (6,8)
+# childs = [(2,3), (3,4), (4,5)]
+# dict["open"] = open
+# dict["exp"] = exp
+# dict["childs"] = childs
+
 
 def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, y_label):
     x = np.arange(start=0.  # upper limit
@@ -35,5 +37,3 @@ def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, 
     plt.title(str(index))
     plt.savefig('open_list.png')
     plt.show()
-
-

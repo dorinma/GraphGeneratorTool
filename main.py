@@ -4,7 +4,7 @@ from matplotlib import figure
 from matplotlib.pyplot import plot
 
 import ui
-import gridView
+import grid_view
 
 root = Tk()
 my_gui = ui.GUI(root)
