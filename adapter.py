@@ -23,8 +23,10 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
         return generator.weights_to_edges_random(edges, min_e_val, max_e_val)
     elif method == weights_options[1]:  # Planar
         return generator.weights_to_edges_planar_connection(edges, min_e_val, max_e_val)
-    else:  # Predefined calculation
+    elif method == weights_options[2]:  # Predefined calculation
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
+    else:   # By Coordinates
+        return None
 
 
 def generate_queries(vertices, edges, queries, dest_directory):

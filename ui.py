@@ -10,9 +10,7 @@ from matplotlib.backends.backend_tkagg import (
     NavigationToolbar2Tk
 )
 from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
 from matplotlib import backend_bases
-import numpy as np
 
 import read_write_io
 import adapter
@@ -22,7 +20,7 @@ import grid_view
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Grid Connection', 'Bipartite Graph')
-weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation')
+weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation', 'By Coordinates')
 weights_options_grid = ('By axis (1)', 'Random')
 queries_options = ('Random', 'All Pairs', 'Minimal Edges')
 source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
@@ -68,6 +66,19 @@ def validate_objective_range(min, max):
         return False
     else:
         return True
+
+
+def modify_toolitems():
+    mpl.rcParams['toolbar'] = 'None'
+    backend_bases.NavigationToolbar2.toolitems = (
+        ('Home', 'Reset original view', 'home', 'home'),
+        ('Back', 'Back to  previous view', 'back', 'back'),
+        ('Forward', 'Forward to next view', 'forward', 'forward'),
+        (None, None, None, None),
+        ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+        (None, None, None, None),
+        ('Save', 'Save the figure', 'filesave', 'save_figure'),
+    )
 
 
 class GUI:
@@ -172,17 +183,25 @@ class GUI:
             self.b_set_edges_m3.grid(row=row, column=2, padx=4, pady=2)
 
         elif method == methods_options[5]:  # Bipartite Graph
-            Label(self.edges_method_window, text="Relation between sets of vertices, ").grid(row=row, column=0, padx=6,
-                                                                                             pady=2, columnspan=2,
-                                                                                             sticky=W)
+            Label(self.edges_method_window, text="Relation between sets of vertices:").grid(row=row, column=0, padx=6,
+                                                                                            pady=2, sticky=W)
+
+            self.t_edge_relation = Text(self.edges_method_window, height=1, width=6)
+            self.t_edge_relation.grid(row=row, column=2, padx=6, pady=2, sticky=E)
+
             row += 1
 
-            Label(self.edges_method_window, text="e.g. 1:1, 1:2 -").grid(row=row, column=0, padx=6, pady=2,
-                                                                         columnspan=2,
-                                                                         sticky=W)
-            self.t_edge_relation = Text(self.edges_method_window, height=1, width=10)
-            self.t_edge_relation.grid(row=row, column=1, padx=6, pady=2, sticky=E)
-            # row += 1
+            Label(self.edges_method_window, text="[e.g. 1:1, 1:2]").grid(row=row, column=0, padx=6, pady=2,
+                                                                         columnspan=2, sticky=W)
+
+            row += 1
+
+            Label(self.edges_method_window, text="Number of edges between sets:").grid(row=row, column=0, padx=6,
+                                                                                       pady=2, columnspan=2, sticky=W)
+            self.t_edges_between_groups = Prox(self.edges_method_window, width=10)
+            self.t_edges_between_groups.grid(row=row, column=2, padx=6, pady=2, sticky=E)
+
+            row += 1
 
             self.b_set_edges_m3 = Button(self.edges_method_window, text="Set", width=8,
                                          command=self.get_bipartite_params)
@@ -458,6 +477,9 @@ class GUI:
             print("[DEBUG] Generating queries...")
             adapter.generate_queries(self.vertices, self.edges_generated, self.selected_queries, dest_directory)
 
+    def create_gif(self):
+        return
+
     def generate_graph(self):
         global dest_directory
 
@@ -590,44 +612,69 @@ class GUI:
                 if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
                     self.edges_bipartite1 = int(values[0])
                     self.edges_bipartite1 = int(values[1])
-                    return True
+                    if self.t_edges_between_groups.get() != '':
+                        self.edges_number_bipartite = int(self.t_edges_between_groups.get())
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
             except:
                 return False
 
     def get_fully_random_params(self):
-        if self.edges_method_full_rnd_perc.get() == 0:  #
-            self.edges_number_full_random = int(self.t_edges_number.get())
-        else:
-            self.edges_percentage_full_random = int(self.t_edges_percentage.get())
-            self.edges_percentage = True
-        self.edges_method_window.destroy()
+        try:
+            if self.edges_method_full_rnd_perc.get() == 0:  #
+                self.edges_number_full_random = int(self.t_edges_number.get())
+            else:
+                self.edges_percentage_full_random = int(self.t_edges_percentage.get())
+                self.edges_percentage = True
+            self.edges_method_window.destroy()
+        except:
+            tkinter.messagebox.showinfo(title='Missing parameters',
+                                        message='Please make sure all fields are not empty.',
+                                        parent=self.edges_method_window)
 
     def get_fully_connected_params(self):
-        if self.edges_method_full_connected.get() == 1:  # MST + more
-            self.edges_number_connected = int(self.t_add_edges_to_mst.get())
-        self.edges_method_window.destroy()
+        try:
+            if self.edges_method_full_connected.get() == 1:  # MST + more
+                self.edges_number_connected = int(self.t_add_edges_to_mst.get())
+            self.edges_method_window.destroy()
+        except:
+            tkinter.messagebox.showinfo(title='Missing parameters',
+                                        message='Please make sure all fields are not empty.',
+                                        parent=self.edges_method_window)
 
     def get_flow_params(self):
-        self.edges_flow_src = int(self.t_edge_src.get())
-        self.edges_flow_dst = int(self.t_edge_dst.get())
-        self.edges_flow_paths = int(self.t_edge_paths_num.get())
-        self.edges_method_window.destroy()
+        try:
+            self.edges_flow_src = int(self.t_edge_src.get())
+            self.edges_flow_dst = int(self.t_edge_dst.get())
+            self.edges_flow_paths = int(self.t_edge_paths_num.get())
+            self.edges_method_window.destroy()
+        except:
+            tkinter.messagebox.showinfo(title='Missing parameters',
+                                        message='Please make sure all fields are not empty.',
+                                        parent=self.edges_method_window)
 
     def get_bipartite_params(self):
-        self.edges_bipartite_txt = self.t_edge_relation.get("1.0", END)
-        self.edges_method_window.destroy()
-
-    def modify_toolitems(self):
-        mpl.rcParams['toolbar'] = 'None'
-        backend_bases.NavigationToolbar2.toolitems = (
-            ('Home', 'Reset original view', 'home', 'home'),
-            ('Back', 'Back to  previous view', 'back', 'back'),
-            ('Forward', 'Forward to next view', 'forward', 'forward'),
-            (None, None, None, None),
-            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-            (None, None, None, None),
-            ('Save', 'Save the figure', 'filesave', 'save_figure'),
-        )
+        if self.t_edge_relation.get("1.0", END) != '\n':
+            self.edges_bipartite_txt = self.t_edge_relation.get("1.0", END)
+            try:
+                values = str(self.edges_bipartite_txt).split(":")
+                if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
+                    self.edges_bipartite1 = int(values[0])
+                    self.edges_bipartite1 = int(values[1])
+                    if self.t_edges_between_groups.get() != '':
+                        self.edges_number_bipartite = int(self.t_edges_between_groups.get())
+                    self.edges_method_window.destroy()
+                else:
+                    tkinter.messagebox.showinfo(title='Missing parameters',
+                                                message='Please make sure all fields are not empty.',
+                                                parent=self.edges_method_window)
+            except:
+                tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters.", parent=self.edges_method_window)
+        else:
+            tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters.", parent=self.edges_method_window)
 
     def get_next_img(self):
         self.b_prev_img.config(state='normal')
@@ -635,7 +682,7 @@ class GUI:
         self.display_grid(self.img_index)
 
     def get_prev_img(self):
-        self.b_next_img.config('normal')
+        self.b_next_img.config(state='normal')
         if self.img_index == 1:
             self.b_prev_img.config(state='disabled')
         self.img_index -= 1
@@ -693,19 +740,9 @@ class GUI:
         self.grid_params = grid_params.Grid()
         self.img_index = 1
 
-        # TESTING
-        # self.img = PhotoImage(file="resources/1.png")
-        # self.img1 = self.img.subsample(1, 1)
-        # self.c = Canvas(root, bg="black", height=500, width=300)
-        # self.c.grid(row=0, column=3, rowspan=24, pady=2)
-        # self.c.create_image(50, 10, image=self.img1)
-
-        # -------------------------------------------------------------------------------------------------------------
-
-        self.modify_toolitems()
+        modify_toolitems()
         self.display_grid(self.img_index)
 
-        # -------------------------------------------------------------------------------------------------------------
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
 
         self.t_vertices = Prox(root, width=15)
@@ -890,8 +927,12 @@ class GUI:
                                  fg='white')
         self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
+        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14)
+        self.b_generate.grid(row=row_index, column=4, columnspan=2, padx=8, pady=2, sticky=E)
+
         inc_row()
 
+        # Objectives validation
         if len(self.objectives) == 0:
             tkinter.messagebox.showinfo("Read config failed", "Could not read objectives file, please check it and "
                                                               "re-run the program.")
