@@ -5,10 +5,17 @@ The user can choose the method to create and weight the edges. Each method will 
 
 The costs of the edges can be defined by number of objectives, defined in a configuration file. The program does not support non-positive values.
 
-For the program to run successfully, there must be two non-empty files in the resources directory: input.json and config.txt.
+For the program to run successfully, there must be a non-empty file in the resources directory: config.txt. There is also an input.json file in the same directory, used for displaying graphs on the screen. This file may be empty but in this case no graph will be shown.
+
+### config.txt
+This file must contain at least one record (line). Each line describes an objective, and must contain a name (could be anything) and minimal and maximal value for this objective (must be non-negative numbers). The fields are seperated by a tab. Example for such file:
+```yaml
+Time	0	20
+Cost	0	200
+```
 
 ### input.json
-This file is the source of the graphs displayed on the screen. It describes the states during the run of a search algorithm over a graph, and it is written as follows, where "1" is the index of the state, "Open" is the vertices in the open list, "Exp" is the next vertex to expand and "Children" are the neighbors of the Exp vertex.
+This file is the source of the graphs displayed on the screen. It describes the states during the run of a search algorithm over a graph, and it is written as follows, where "1" is the index of the state, "Open" are the vertices in the open list, "Exp" is the next vertex to expand and "Children" are the neighbors of the Exp vertex.
 ```yaml
 {
   "1": {
@@ -22,13 +29,6 @@ This file is the source of the graphs displayed on the screen. It describes the 
     "Children": [[3, 4], [4, 5]]
   }
 }
-```
-
-### config.txt
-This file must contain at least one record (line). Each line describes an objective, and must contain a name (could be anything) and minimal and maximal value for this objective (must be non-negative numbers). The fields are aeperated by a tab. Example for such file:
-```yaml
-Time	0	20
-Cost	0	200
 ```
 
 # Files Generated:
@@ -49,7 +49,7 @@ For each objective the program will generate a single .gr file.
 4. Flow Network - insert source vertex, goal vertex and number of paths, and the graph will contain this number of paths between these two vertices. 
 
 5. Grid Connection - the user can decide if the grid is in 2D or 3D and in how many axes the movement will be allowed (1/2 for 2D and 1/2/3 for 3D).
-The user can decide how many blocks will appear in the grid. //The possible moves would be to empty cells and will written to the gr file. //?
+The user can decide how many blocks will appear in the grid. The possible moves will be only to empty cells, where there are no blocks, and will be written to the .gr file.
 The user can also decide what would be the edges' weights: random values between min and max he'll insert or 1 for each axis he moves in.
    
 6. Bipartite Graph - insert a relation between two sets of vertices and number of edges between sets. The graph will contain edges from the first set to 
@@ -68,7 +68,7 @@ the sum of two of them will be larger than the third.
 3. Index Differnce - insert min and max values and the edges will get a value relate to the differnce between the indexes of the vertices, meaning that adjacent 
 vertices will get a higher weight. 
    
-4. By Coordinates - the value of the edge will be according to the coordinates of the vertices it is connected to. ////?
+4. By Coordinates - the value of the edge will be according to the coordinates of the vertices it is connected to (the actual distance between them).
 
 ## .co file
 
