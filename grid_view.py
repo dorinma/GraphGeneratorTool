@@ -1,3 +1,5 @@
+import os
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,3 +39,12 @@ def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, 
     plt.title(str(index))
     plt.savefig('open_list.png')
     plt.show()
+
+
+def create_gif():
+    filenames = ["config/myplot.png", "config/myplot2.png", "config/myplot3.png"]
+    import imageio
+    with imageio.get_writer(os.getcwd() + "\\out\\" + "movie.gif", mode='I') as writer:
+        for filename in filenames:
+            image = imageio.imread(filename)
+            writer.append_data(image)
