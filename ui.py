@@ -78,6 +78,7 @@ def modify_toolitems():
         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
         (None, None, None, None),
         ('Save', 'Save the figure', 'filesave', 'save_figure'),
+        # ('Load', 'Load the figure', 'fileload', 'load_figure'),
     )
 
 
@@ -698,7 +699,7 @@ class GUI:
     def display_grid(self, index):
         json_dict = read_write_io.read_json()
         if json_dict.__contains__(str(index)):
-            fig = grid_view.get_graph_image_by_index(json_dict, 0, 20, 0, 20, str(index))
+            fig = grid_view.get_graph_image_by_index(json_dict, str(index))
 
             canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
             canvas.draw()
@@ -718,7 +719,7 @@ class GUI:
         self.root = root
         self.root.title("Graph Generator")
         self.root.geometry("890x570")  # (width, height)
-        self.root.resizable(False, False)
+        # self.root.resizable(False, False)
 
         # Variables
         self.objectives = read_write_io.read_config()
@@ -927,7 +928,7 @@ class GUI:
                                  fg='white')
         self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
-        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14)
+        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14, state='disabled')
         self.b_generate.grid(row=row_index, column=4, columnspan=2, padx=8, pady=2, sticky=E)
 
         inc_row()

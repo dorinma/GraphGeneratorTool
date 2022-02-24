@@ -22,7 +22,7 @@ import os
 #     plt.savefig('open_list.png')
 #     plt.show()
 
-def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index):
+def get_graph_image_by_index(dict_, index):
     fig = Figure(figsize=(5, 4), dpi=100)
     ax = fig.add_subplot()
     curr = dict_[index]
@@ -31,7 +31,6 @@ def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index):
     ax.plot(curr["Exp"][0], curr["Exp"][1], 'r^', markersize=6)
     for c in curr["Children"]:
         ax.plot(c[0], c[1], 'co', markersize=4)
-    ax.axis([min_x, max_x, min_y, max_y])  # [xmin, xmax, ymin, ymax]
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     return fig
