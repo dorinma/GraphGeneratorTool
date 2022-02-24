@@ -2,9 +2,11 @@
 #   Write output to .gr, .co, query files
 
 import os
+import json
 
-dir = os.getcwd() + "\\config\\"
+dir = os.getcwd() + "\\resources\\"
 FILE_NAME_CONFIG = "config.txt"
+FILE_NAME_INPUT = "input.json"
 
 
 def read_config():
@@ -51,3 +53,13 @@ def write_to_file_query(full_path, edges):
         print("[INFO] Saved output to " + full_path)
     except:
         print("[ERROR] Could not write query file.")
+
+
+def read_json():
+    try:
+        with open(dir + FILE_NAME_INPUT, 'r') as f:
+            data = json.load(f)
+        return data
+    except:
+        print("[ERROR] Could not read input file.")
+        return ""
