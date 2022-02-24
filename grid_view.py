@@ -1,4 +1,5 @@
 from matplotlib.figure import Figure
+import os
 
 # def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index, x_label, y_label):
 #     x = np.arange(start=0.  # upper limit
@@ -34,3 +35,12 @@ def get_graph_image_by_index(dict_, min_x, max_x, min_y, max_y, index):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     return fig
+
+
+def create_gif():
+    filenames = ["config/myplot.png", "config/myplot2.png", "config/myplot3.png"]
+    import imageio
+    with imageio.get_writer(os.getcwd() + "\\out\\" + "movie.gif", mode='I') as writer:
+        for filename in filenames:
+            image = imageio.imread(filename)
+            writer.append_data(image)
