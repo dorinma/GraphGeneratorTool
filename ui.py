@@ -68,18 +68,37 @@ def validate_objective_range(min, max):
         return True
 
 
-def modify_toolitems():
-    mpl.rcParams['toolbar'] = 'None'
-    backend_bases.NavigationToolbar2.toolitems = (
-        ('Home', 'Reset original view', 'home', 'home'),
-        ('Back', 'Back to  previous view', 'back', 'back'),
-        ('Forward', 'Forward to next view', 'forward', 'forward'),
-        (None, None, None, None),
-        ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-        (None, None, None, None),
-        ('Save', 'Save the figure', 'filesave', 'save_figure'),
-        # ('Load', 'Load the figure', 'fileload', 'load_figure'),
-    )
+# def modify_toolitems():
+#     mpl.rcParams['toolbar'] = 'None'
+#     backend_bases.NavigationToolbar2.toolitems = (
+#         ('Home', 'Reset original view', 'home', 'home'),
+#         ('Back', 'Back to  previous view', 'back', 'back'),
+#         ('Forward', 'Forward to next view', 'forward', 'forward'),
+#         (None, None, None, None),
+#         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+#         (None, None, None, None),
+#         ('Save', 'Save the figure', 'filesave', 'save_figure'),
+#         # ('Load', 'Load the figure', 'fileload', 'load_figure'),
+#     )
+
+
+# Custom toolbar
+class CustomToolbar(NavigationToolbar2Tk):
+    def load_figure(self):
+        tkinter.messagebox.showinfo("TEST", "test")
+
+    def __init__(self, canvas_, parent_):
+        self.toolitems = (
+            ('Home', 'Reset original view', 'home', 'home'),
+            ('Back', 'Back to  previous view', 'back', 'back'),
+            ('Forward', 'Forward to next view', 'forward', 'forward'),
+            (None, None, None, None),
+            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+            (None, None, None, None),
+            ('Save', 'Save the figure', 'filesave', 'save_figure'),
+            ('Load', 'Load the figure', 'fileload', 'load_figure'),
+            )
+        NavigationToolbar2Tk.__init__(self, canvas_, parent_, pack_toolbar=False)
 
 
 class GUI:
@@ -704,7 +723,8 @@ class GUI:
             canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
             canvas.draw()
 
-            toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
+            # toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
+            toolbar = CustomToolbar(canvas, self.root)
 
             toolbar.update()
             canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
@@ -741,7 +761,7 @@ class GUI:
         self.grid_params = grid_params.Grid()
         self.img_index = 1
 
-        modify_toolitems()
+        # modify_toolitems()
         self.display_grid(self.img_index)
 
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
