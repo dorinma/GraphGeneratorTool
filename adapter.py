@@ -5,7 +5,7 @@ import time
 weights_options = ('Fully Random', 'Planar', 'Predefined Calculation')
 # methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
 #                    'Planar Connection', 'Grid Connection', 'Bipartite Graph')
-# queries_options = ('Random', 'All Pairs', 'Minimal Edges')
+queries_options = ('Random', 'All Pairs', 'Minimal Edges', 'Minimal Paths')
 FILE_NAME_GR = "graph_"
 FILE_NAME_GRID = "grid_"
 FILE_NAME_CO = "coordinates_"
@@ -26,27 +26,25 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
     elif method == weights_options[2]:  # Predefined calculation
         return generator.weights_to_edges_index_diff(edges, vertices, min_e_val, max_e_val)
     else:   # By Coordinates
-        return None
+        return generator.weights_to_edges_coordinate(edges, vertices)
 
 
-def generate_queries(vertices, edges, queries, dest_directory):
+def generate_queries(vertices, edges, query, query_param, dest_directory):
     time_stamp = str(get_curr_time())
-    if queries[0] == 1:  # random
+    if query == queries_options[0]:  # random
         read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_RND + time_stamp,
-                                          generator.query_to_string(generator.query_random(vertices, queries[1])))
-    if queries[2] == 1:  # all pairs
+                                          generator.query_to_string(generator.query_random(vertices, query_param)))
+    if query == queries_options[1]:  # all pairs
         read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_ALL + time_stamp,
                                           generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
-    if queries[3] == 1:  # min x edges
+    if query == queries_options[2] == 1:  # min x edges
         read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
                                           generator.query_to_string(
-                                              (generator.query_pairs_at_least_x_edges(vertices, edges,
-                                                                                      queries[4]))))
-    if queries[5] == 1:  # min x paths
+                                              (generator.query_pairs_at_least_x_edges(vertices, edges, query_param))))
+    if query == queries_options[3] == 1:  # min x paths
         read_write_io.write_to_file_query(dest_directory + FILE_NAME_Q_MIN + time_stamp,
                                           generator.query_to_string(
-                                              (generator.query_pairs_at_least_x_paths(vertices, edges,
-                                                                                      queries[6]))))
+                                              (generator.query_pairs_at_least_x_paths(vertices, edges, query_param))))
 
 
 def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
@@ -188,3 +186,8 @@ def generate_grid_files(edges, coordinates, dest_directory):
     full_path_co = dest_directory + FILE_NAME_CO + time_stamp
     read_write_io.write_to_file_gr(full_path_gr, generator.gr_input_to_string(len(coordinates), edges))
     read_write_io.write_to_file_co(full_path_co, generator.co_grid_input_to_string(coordinates))
+
+
+def get_input_graphs():
+    return read_write_io.read_json()
+

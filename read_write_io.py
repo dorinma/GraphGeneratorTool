@@ -14,7 +14,7 @@ def read_config():
 
     try:
         file = open(dir + FILE_NAME_CONFIG, 'r')
-
+        # file = open(dir + "empty_config.txt", 'r')
         for line in file:
             line_str = line.split('\t')
             objectives[line_str[0]] = (int(line_str[1]), int(line_str[2].removesuffix("\n")))
@@ -55,11 +55,19 @@ def write_to_file_query(full_path, edges):
         print("[ERROR] Could not write query file.")
 
 
-def read_json():
+def read_json(path=None):
     try:
         with open(dir + FILE_NAME_INPUT, 'r') as f:
             data = json.load(f)
         return data
+        # if path:
+        #     with open(dir + FILE_NAME_INPUT, 'r') as f:
+        #         data = json.load(f)
+        #     return data
+        # else:
+        #     with open(path, 'r') as f:
+        #         data = json.load(f)
+        #     return data
     except:
         print("[ERROR] Could not read input file.")
         return ""
