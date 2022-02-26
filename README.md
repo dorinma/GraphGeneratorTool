@@ -84,7 +84,9 @@ The user can choose the method to create the coordinates. Each method will be ex
    
 2. By Index - the values the same as describe above. Each vertices will get a coordinates in this range but close vertices in the index will be closer 
 
-   at the coordinates. The user can insert alt - 0 and alt diff - 0 if he want just the long and lat.    
+   at the coordinates. The user can insert alt - 0 and alt diff - 0 if he want just the long and lat.   
+   
+3. This option is in the grid case, the coordinates file is according to the x, y, z.   
 
 ## query file
 
