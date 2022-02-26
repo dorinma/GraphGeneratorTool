@@ -1,3 +1,5 @@
+import math
+
 from matplotlib.figure import Figure
 import os
 from glob import glob
@@ -48,7 +50,7 @@ def get_single_graph_image(dict_, file_name, dest_directory):
 
 
 def get_max_axes(_dict):
-    max_x, max_y = 0, 0
+    max_x, max_y = -math.inf, -math.inf
     for i in _dict:
         x, y = get_max_axes_single_state(_dict[i])
         max_x, max_y = max(x, max_x), max(y, max_y)
@@ -67,7 +69,7 @@ def get_max_axes_single_state(inner_dict):
 
 
 def get_min_axes(_dict):
-    min_x, min_y = 0, 0
+    min_x, min_y = math.inf, math.inf
     for i in _dict:
         x, y = get_min_axes_single_state(_dict[i])
         min_x, min_y = min(x, min_x), min(y, min_y)
