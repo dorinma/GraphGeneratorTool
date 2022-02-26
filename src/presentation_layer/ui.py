@@ -24,7 +24,7 @@ weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation', 'B
 # queries_options = ('All Pairs', 'Random', 'Minimal Edges', 'Minimal Paths')
 source_directory, dest_directory = os.path.dirname(os.getcwd()) + "\\out\\", \
                                    os.path.dirname(os.getcwd()) + "\\out\\"
-# os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
+
 row_index = 0
 LONG = -74005973
 LAT = 40712775
@@ -506,12 +506,13 @@ class GUI:
                 file_path = os.path.normpath(file_name.name)
                 print("[DEBUG] Generating queries...")
                 adapter.generate_queries(self.vertices, self.edges_generated, self.query_method.get(),
-                                         self.queries_param, file_path)
+                                         self.queries_param, self.is_bidirected, file_path)
 
     def create_gif(self):
-        dir = fd.askdirectory()
-        if dir:
-            grid_view.create_gif(dir)
+        global dest_directory
+        src_dir = fd.askdirectory()
+        if src_dir:
+            grid_view.create_gif(src_dir, dest_directory)
 
     def save_graph_to(self):
         global dest_directory
@@ -548,6 +549,7 @@ class GUI:
                 vertices_num = int(self.t_vertices.get())
                 coordinates = [self.long, self.long_diff, self.lat, self.lat_diff, self.alt, self.alt_diff]
                 rnd_distance = self.rb_coor.get() == 0  # Random
+                self.is_bidirected = self.bidir.get() == 1
                 if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random
                     edges_number = self.edges_number_full_random
                     if self.edges_percentage:
@@ -775,7 +777,7 @@ class GUI:
 
             self.toolbar.destroy()
             self.toolbar = CustomToolbar(canvas, self.root, self)
-            # self.toolbar.grid_remove()
+
             self.toolbar.update()
             canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
             canvas.mpl_connect("key_press_event", key_press_handler)
@@ -811,6 +813,7 @@ class GUI:
         self.alt = ALT
         self.alt_diff = ALT_DIFF
         self.edges_generated = []
+        self.is_bidirected = False
         self.valid_grid_values = False
         self.grid_params = grid_params.Grid()
         self.img_index = 1

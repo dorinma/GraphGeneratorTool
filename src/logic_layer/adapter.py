@@ -29,22 +29,26 @@ def generate_edges_weights(vertices, edges, method, min_e_val, max_e_val):
         return generator.weights_to_edges_coordinate(edges, vertices)
 
 
-def generate_queries(vertices, edges, query, query_param, dest_directory):
+def generate_queries(vertices, edges, query, query_param, is_bidirected, dest_directory):
     time_stamp = str(get_curr_time())
     if query == 0:  # all pairs
         read_write_io.write_to_file_query(dest_directory,  # + FILE_NAME_Q_ALL + time_stamp,
-                                          generator.query_to_string((generator.query_all_vertices_pairs(vertices))))
+                                          generator.query_to_string(
+                                              generator.query_all_vertices_pairs(vertices, is_bidirected)))
     elif query == 1:  # random
         read_write_io.write_to_file_query(dest_directory,  # + FILE_NAME_Q_RND + time_stamp,
-                                          generator.query_to_string(generator.query_random(vertices, query_param)))
+                                          generator.query_to_string(
+                                              generator.query_random(vertices, query_param, is_bidirected)))
     elif query == 2:  # min x edges
         read_write_io.write_to_file_query(dest_directory,  # + FILE_NAME_Q_MIN + time_stamp,
                                           generator.query_to_string(
-                                              (generator.query_pairs_at_least_x_edges(vertices, edges, query_param))))
+                                              generator.query_pairs_at_least_x_edges(vertices, edges, query_param,
+                                                                                     is_bidirected)))
     else:  # min x paths
         read_write_io.write_to_file_query(dest_directory,  # + FILE_NAME_Q_MIN + time_stamp,
                                           generator.query_to_string(
-                                              (generator.query_pairs_at_least_x_paths(vertices, edges, query_param))))
+                                              (generator.query_pairs_at_least_x_paths(vertices, edges, query_param,
+                                                                                      is_bidirected))))
 
 
 def generate_coordinates_file(vertices, coordinates, rnd_distance, path):
