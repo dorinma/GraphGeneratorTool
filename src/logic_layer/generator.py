@@ -187,32 +187,31 @@ def weights_to_edges_coordinate(edges, v_coor_list):
 
 def query_random(num_vertices, num_pairs , bidirected):
     query = set()
-    if bidirected and num_pairs > math.factorial(num_vertices -1):
-        num_pairs = math.factorial(num_vertices - 1)
-    elif num_pairs > num_vertices * (num_vertices -1):
+    if bidirected and num_pairs > num_vertices * ((num_vertices - 1) // 2):
+        num_pairs = num_vertices * ((num_vertices - 1) // 2)
+    elif not bidirected and num_pairs > num_vertices * (num_vertices -1):
         num_pairs = num_vertices * (num_vertices -1)
     while len(query) != num_pairs:
         pair = random.sample(range(1, num_vertices + 1), 2)
-        if bidirected and (pair[1], pair[0]) in query:
-            pass
-        query.add((pair[0], pair[1]))
+        if not (bidirected and (pair[1], pair[0]) in query):
+            query.add((pair[0], pair[1]))
     return query
 
 
-def query_all_vertices_pairs(num_vertices):
+def query_all_vertices_pairs(num_vertices, bidirected):
     query = set()
     for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
-            if i != j:
+            if (i < j and bidirected) or (i != j and not bidirected):
                 query.add((i, j))
     return query
 
 
-def query_pairs_at_least_x_edges(num_vertices, edges, x):
+def query_pairs_at_least_x_edges(num_vertices, edges, x, bidirected):
     query = set()
     for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
-            if i != j:
+            if (i < j and bidirected) or (i != j and not bidirected):
                 neighbors = get_neighbors_dict(edges)
                 paths = all_paths_source_target_at_least_x(neighbors, i, j, x)
                 if len(paths) > 0:
@@ -220,14 +219,14 @@ def query_pairs_at_least_x_edges(num_vertices, edges, x):
     return query
 
 
-def query_pairs_at_least_x_paths(num_vertices, edges, x):
+def query_pairs_at_least_x_paths(num_vertices, edges, x, bidirected):
     query = set()
     for i in range(1, num_vertices + 1):
         for j in range(1, num_vertices + 1):
-            if i != j:
+            if (i < j and bidirected) or (i != j and not bidirected):
                 neighbors = get_neighbors_dict(edges)
                 paths = all_paths_source_target(neighbors, i, j)
-                if len(paths) > x:
+                if len(paths) >= x:
                     query.add((i, j))
     return query
 
@@ -301,7 +300,7 @@ def get_neighbors_dict(edges):
         if edge.u in neighbors:
             neighbors[edge.u].append(edge.v)
         else:
-            neighbors[edge.u] = []
+            neighbors[edge.u] = [edge.v]
     return neighbors
 
 

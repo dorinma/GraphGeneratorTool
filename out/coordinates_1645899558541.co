@@ -1,0 +1,10 @@
+c	Created in graph generator tool by Shahar Bardugo & Dorin Matzrafi
+c
+p	aux sp co 5
+c	graph contains 5 nodes
+c
+v	1	-74005973	40712775	10
+v	2	-74005923	40712205	28
+v	3	-74005252	40712031	63
+v	4	-74005446	40712496	47
+v	5	-74005390	40713679	-48
