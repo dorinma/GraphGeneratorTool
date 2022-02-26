@@ -77,8 +77,9 @@ class CustomToolbar(NavigationToolbar2Tk):
             ('All files', '*.*')
         )
         path_str = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
-        new_state = adapter.get_single_input_graph(os.path.normpath(path_str))
-        self.gui.display_grid(new_state, -1, os.path.splitext(os.path.basename(path_str))[0])
+        if path_str:
+            new_state = adapter.get_single_input_graph(os.path.normpath(path_str))
+            self.gui.display_grid(new_state, -1, os.path.splitext(os.path.basename(path_str))[0])
 
     def __init__(self, canvas_, parent_, gui):
         self.gui = gui
@@ -770,13 +771,15 @@ class GUI:
             canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
             canvas.draw()
 
+            self.toolbar.destroy()
             self.toolbar = CustomToolbar(canvas, self.root, self)
-
+            # self.toolbar.grid_remove()
             self.toolbar.update()
             canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
             canvas.mpl_connect("key_press_event", key_press_handler)
 
             canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18, columnspan=4)
+
             self.toolbar.grid(row=18, column=3, columnspan=4, pady=2, padx=4)
             if not json_dict.__contains__(str(index + 1)):
                 self.b_next_img.config(state='disabled')
@@ -811,6 +814,10 @@ class GUI:
         self.img_index = 1
         self.queries_param = -1
         self.json_dict = adapter.get_input_graphs()
+
+        fig = Figure(figsize=(5, 4), dpi=100)
+        canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
+        self.toolbar = CustomToolbar(canvas, self.root, self)
 
         self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
 
