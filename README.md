@@ -72,7 +72,35 @@ vertices will get a higher weight.
 
 ## .co file
 
-The second file is co, represent the vertices. each row is a vertex - index of the vertex and it's coordinates (2 or 3). 
+The second file is co, represent the vertices. Each row is a vertex - index of the vertex and it's coordinates (2 or 3). 
 
+The user can choose the method to create the coordinates. Each method will be explained below, along with the parametes needed for it.
 
+1. Randomly - the default is NY coordinates - long , lat , alt written on the screen and also default values for the possible distance differnece.
+
+   The user can change both kind of valus. Each vertices will get a coordinates randomly in this range. 
+
+   The user can insert alt - 0 and alt diff - 0 if he want just the long and lat. 
+   
+2. By Index - the values the same as describe above. Each vertices will get a coordinates in this range but close vertices in the index will be closer 
+
+   at the coordinates. The user can insert alt - 0 and alt diff - 0 if he want just the long and lat.    
+
+## query file
+
+The third file is query file but is have no type. Each row is a pair of two vertices - source and target. 
+
+The user can choose the method to create this pairs. Each method will be explained below, along with the parametes needed for it.
+
+1. All Pair - all combinations of two vertices. 
+
+2. Random - The user insert number of pairs and get this number of pairs choosen randomly. 
+
+3. Min Edges - The user insert the number of min edges - thats mean that only pairs of vertices that contains path with at least this number of edges in 
+
+   this path will insert to the file. 
+   
+4. Min Paths - The user insert the number of min paths - thats mean that only pairs of vertices that contains at least this number of possible paths will
+
+   insert to the file. 
 
