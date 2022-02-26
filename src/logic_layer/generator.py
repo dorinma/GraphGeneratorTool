@@ -118,7 +118,7 @@ def bipartite(num_vertices, num_edges, group_a, group_b):
     group_a = (group_a * num_vertices) // (group_a + group_b)
     group_b = num_vertices - group_a
     group_a_ver = random.sample(range(1, num_vertices + 1), group_a)
-    all_ver = list(range(1, num_vertices))
+    all_ver = list(range(1, num_vertices+1))
     group_b_ver = []
     for v in all_ver:
         if v not in group_a_ver:
@@ -127,9 +127,9 @@ def bipartite(num_vertices, num_edges, group_a, group_b):
     while len(edges) != num_edges:
         bias = fractions.Fraction(1, 2)
         if random.random() < bias:
-            edges.add(Edge(group_a_ver[random.randint(0, group_a)], group_b_ver[random.randint(0, group_b)]))
+            edges.add(Edge(group_a_ver[random.randint(0, group_a-1)], group_b_ver[random.randint(0, group_b-1)]))
         else:
-            edges.add(Edge(group_b_ver[random.randint(0, group_b)], group_a_ver[random.randint(0, group_a)]))
+            edges.add(Edge(group_b_ver[random.randint(0, group_b-1)], group_a_ver[random.randint(0, group_a-1)]))
     return edges
 
 

@@ -654,7 +654,7 @@ class GUI:
                 values = str(self.edges_bipartite_txt).split(":")
                 if len(values) == 2 and int(values[0]) > 0 and int(values[1]) > 0:
                     self.edges_bipartite1 = int(values[0])
-                    self.edges_bipartite1 = int(values[1])
+                    self.edges_bipartite2 = int(values[1])
                     if self.t_edges_between_groups.get() != '':
                         self.edges_number_bipartite = int(self.t_edges_between_groups.get())
                         return True
