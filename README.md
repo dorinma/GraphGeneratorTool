@@ -84,9 +84,7 @@ The second file generated is a .co file, representing the vertices. Each row des
    
    If only two coordinates are needed, one can insert 0 for the alt & alt diff fields.
    
-2. By Index - the values are the same as describe above. Each vertex will get coordinates in this range, when in this case close vertices (by index) will get closer 
-
-   coordinates. 
+2. By Index - the values are the same as describe above. Each vertex will get coordinates in this range, when in this case close vertices (by index) will get closer coordinates. 
    
 3. For the grid case, the coordinates file will be according to the x, y, z.   
 
