@@ -12,9 +12,9 @@ from matplotlib.backends.backend_tkagg import (
 )
 from matplotlib.backend_bases import key_press_handler
 
-import adapter
-import grid_params
-import grid_view
+from src.logic_layer import adapter
+from src.presentation_layer import grid_params
+from src.presentation_layer import grid_view
 
 objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
