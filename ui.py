@@ -3,6 +3,7 @@ from tkinter import filedialog as fd
 import tkinter.messagebox
 import os
 import matplotlib as mpl
+from matplotlib.figure import Figure
 
 mpl.use('TkAgg')
 from matplotlib.backends.backend_tkagg import (
@@ -75,9 +76,12 @@ class CustomToolbar(NavigationToolbar2Tk):
             ('json files', '*.json'),
             ('All files', '*.*')
         )
-        filename = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+        path_str = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+        new_state = adapter.get_single_input_graph(os.path.normpath(path_str))
+        self.gui.display_grid(new_state, -1, os.path.splitext(os.path.basename(path_str))[0])
 
-    def __init__(self, canvas_, parent_):
+    def __init__(self, canvas_, parent_, gui):
+        self.gui = gui
         self.toolitems = (
             ('Home', 'Reset original view', 'home', 'home'),
             (None, None, None, None),
@@ -458,7 +462,6 @@ class GUI:
         self.t_min_edges_between.config(state='readonly')
 
     def validate_queries(self):
-        queries_num, min_edges = 0, 0
         valid = True
         if self.query_method.get() == 1:  # random
             if self.t_queries_num.get() != '':
@@ -503,7 +506,9 @@ class GUI:
                                          self.queries_param, file_path)
 
     def create_gif(self):
-        return
+        dir = fd.askdirectory()
+        if dir:
+            grid_view.create_gif(dir)
 
     def save_graph_to(self):
         global dest_directory
@@ -514,7 +519,7 @@ class GUI:
         dest_directory = file_path
         self.generate_graph()
         # Need to change implementation in adapter.py: take 'dest_directory' as full path including file name,
-        # remove file name from implemented methods.
+        # remove file name from implemented methods and send different name for each objective.
 
     def generate_graph(self):
         global dest_directory
@@ -612,12 +617,11 @@ class GUI:
         except:
             tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Please insert a valid number of vertices.")
             return False
+        if self.vertices <= 0:
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Please insert a valid number of vertices.")
+            return False
         else:
-            if self.vertices <= 0:
-                tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Please insert a valid number of vertices.")
-                return False
-            else:
-                return True
+            return True
 
     def validate_params_edges_gen_method(self):
         if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random - number/ percentage
@@ -657,7 +661,7 @@ class GUI:
                     return False
             except:
                 return False
-        else:   # Fully Connected Dense Graph - no params
+        else:  # Fully Connected Dense Graph - no params
             return True
 
     def get_fully_random_params(self):
@@ -718,26 +722,32 @@ class GUI:
     def get_next_img(self):
         self.b_prev_img.config(state='normal')
         self.img_index += 1
-        self.display_grid(self.img_index)
+        self.display_grid(self.json_dict, self.img_index)
 
     def get_prev_img(self):
         self.b_next_img.config(state='normal')
         if self.img_index == 2:  # indexes start from 1
             self.b_prev_img.config(state='disabled')
         self.img_index -= 1
-        self.display_grid(self.img_index)
+        self.display_grid(self.json_dict, self.img_index)
         return
 
     def get_img_by_index(self):
         if self.t_img_goto.get() != '':
             index = int(self.t_img_goto.get())
-            self.display_grid(index)
+            self.display_grid(self.json_dict, index)
             return
         else:
             tkinter.messagebox.showinfo("Missing Params", "Please insert a valid index to show.")
 
     def load_new_json(self):
-        return
+        filetypes = (
+            ('json files', '*.json'),
+            ('All files', '*.*')
+        )
+        path_str = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+        self.json_dict = adapter.get_input_graphs(os.path.normpath(path_str))
+        self.display_grid(self.json_dict, 1)
 
     def disable_all_no_objectives(self):
         self.edges_weights_method.set(weights_options_graphs[3])
@@ -747,32 +757,38 @@ class GUI:
         self.rb_obj_set_values.config(state='disabled')
         self.rb_obj_default.config(state='disabled')
 
-    def display_grid(self, index):
-        json_dict = adapter.get_input_graphs()
-        if json_dict.__contains__(str(index)):
-            fig = grid_view.get_graph_image_by_index(json_dict, str(index))
-
+    def display_grid(self, json_dict, index, file_name=None):
+        global dest_directory
+        if index == -1:
+            fig = grid_view.get_single_graph_image(json_dict, file_name, dest_directory)
+        else:
+            if json_dict.__contains__(str(index)):
+                fig = grid_view.get_graph_image_by_index(json_dict, str(index), dest_directory)
+            else:
+                fig = Figure(figsize=(5, 4), dpi=100)
+        if fig:
             canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
             canvas.draw()
 
-            # toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
-            toolbar = CustomToolbar(canvas, self.root)
+            self.toolbar = CustomToolbar(canvas, self.root, self)
 
-            toolbar.update()
+            self.toolbar.update()
             canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
             canvas.mpl_connect("key_press_event", key_press_handler)
 
             canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18, columnspan=4)
-            toolbar.grid(row=18, column=3, columnspan=4, pady=2, padx=4)
+            self.toolbar.grid(row=18, column=3, columnspan=4, pady=2, padx=4)
             if not json_dict.__contains__(str(index + 1)):
                 self.b_next_img.config(state='disabled')
+            else:
+                self.b_next_img.config(state='normal')
         else:
             tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "No such graph.")
 
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("890x600")  # (width, height)
+        self.root.geometry("890x595")  # (width, height)
         # self.root.resizable(False, False)
 
         # Variables
@@ -794,8 +810,11 @@ class GUI:
         self.grid_params = grid_params.Grid()
         self.img_index = 1
         self.queries_param = -1
+        self.json_dict = adapter.get_input_graphs()
 
-        self.display_grid(self.img_index)
+        self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
+
+        self.display_grid(self.json_dict, self.img_index)
 
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
 
@@ -969,7 +988,6 @@ class GUI:
         self.b_prev_img = Button(root, text="Prev", command=self.get_prev_img, width=10, state='disabled')
         self.b_prev_img.grid(row=row_index, column=4, padx=8, pady=2, sticky=E)
 
-        self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
         self.b_next_img.grid(row=row_index, column=5, padx=8, pady=2, sticky=W)
 
         inc_row()
@@ -992,7 +1010,7 @@ class GUI:
                                  fg='white')
         self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
-        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14, state='disabled')
+        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14)
         self.b_generate.grid(row=row_index, column=6, columnspan=2, padx=6, pady=2, sticky=E)
 
         # Objectives validation

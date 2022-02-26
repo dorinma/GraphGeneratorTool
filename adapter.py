@@ -188,6 +188,9 @@ def generate_grid_files(edges, coordinates, dest_directory):
     read_write_io.write_to_file_co(full_path_co, generator.co_grid_input_to_string(coordinates))
 
 
-def get_input_graphs():
-    return read_write_io.read_json()
+def get_input_graphs(path=None):
+    return read_write_io.read_json(path)
 
+
+def get_single_input_graph(path):
+    return read_write_io.read_single_state(path)
