@@ -3,6 +3,7 @@ from tkinter import filedialog as fd
 import tkinter.messagebox
 import os
 import matplotlib as mpl
+from matplotlib.figure import Figure
 
 mpl.use('TkAgg')
 from matplotlib.backends.backend_tkagg import (
@@ -10,9 +11,7 @@ from matplotlib.backends.backend_tkagg import (
     NavigationToolbar2Tk
 )
 from matplotlib.backend_bases import key_press_handler
-from matplotlib import backend_bases
 
-import read_write_io
 import adapter
 import grid_params
 import grid_view
@@ -21,8 +20,8 @@ objectives_options = ('1', '2', '3', '4', '5')
 methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connected', 'Flow Network',
                    'Grid Connection', 'Bipartite Graph')
 weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation', 'By Coordinates')
-weights_options_grid = ('By axis (1)', 'Random')
-queries_options = ('Random', 'All Pairs', 'Minimal Edges')
+# weights_options_grid = ('By axis (1)', 'Random')
+# queries_options = ('All Pairs', 'Random', 'Minimal Edges', 'Minimal Paths')
 source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
 LONG = -74005973
@@ -30,6 +29,8 @@ LAT = 40712775
 ALT = 10
 COOR_DIFF = 1000
 ALT_DIFF = 100
+MSG_TITLE_MISSING_PARAMS = "Missing Parameters"
+MSG_TITLE_INVALID_INPUT = "Invalid Input"
 
 
 class Prox(Entry):
@@ -61,25 +62,38 @@ def inc_row():
     row_index += 1
 
 
-def validate_objective_range(min, max):
-    if min > max:
+def validate_objective_range(min_, max_):
+    if min_ > max_:
         return False
     else:
         return True
 
 
-def modify_toolitems():
-    mpl.rcParams['toolbar'] = 'None'
-    backend_bases.NavigationToolbar2.toolitems = (
-        ('Home', 'Reset original view', 'home', 'home'),
-        ('Back', 'Back to  previous view', 'back', 'back'),
-        ('Forward', 'Forward to next view', 'forward', 'forward'),
-        (None, None, None, None),
-        ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-        (None, None, None, None),
-        ('Save', 'Save the figure', 'filesave', 'save_figure'),
-        # ('Load', 'Load the figure', 'fileload', 'load_figure'),
-    )
+# Custom toolbar
+class CustomToolbar(NavigationToolbar2Tk):
+    def load_figure(self):
+        filetypes = (
+            ('json files', '*.json'),
+            ('All files', '*.*')
+        )
+        path_str = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+        new_state = adapter.get_single_input_graph(os.path.normpath(path_str))
+        self.gui.display_grid(new_state, -1, os.path.splitext(os.path.basename(path_str))[0])
+
+    def __init__(self, canvas_, parent_, gui):
+        self.gui = gui
+        self.toolitems = (
+            ('Home', 'Reset original view', 'home', 'home'),
+            (None, None, None, None),
+            ('Back', 'Back to  previous view', 'back', 'back'),
+            ('Forward', 'Forward to next view', 'forward', 'forward'),
+            (None, None, None, None),
+            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+            (None, None, None, None),
+            ('Save', 'Save the figure', 'filesave', 'save_figure'),
+            ('Load', 'Load the figure', 'subplots', 'load_figure'),
+        )
+        NavigationToolbar2Tk.__init__(self, canvas_, parent_, pack_toolbar=False)
 
 
 class GUI:
@@ -226,7 +240,7 @@ class GUI:
 
     def set_grid_params(self):
         if not self.validate_and_set_grid_params():
-            tkinter.messagebox.showinfo(title='Missing parameters',
+            tkinter.messagebox.showinfo(title=MSG_TITLE_MISSING_PARAMS,
                                         message='Please make sure all fields are not empty.', parent=self.grid_window)
         else:
             self.valid_grid_values = True
@@ -377,7 +391,7 @@ class GUI:
             self.t_edges_number.config(state='readonly')
 
     def set_objectives_default(self):
-        self.objectives = read_write_io.read_config()
+        self.objectives = adapter.get_objectives()
 
     def set_objectives(self, index):
         count = 1 + index
@@ -427,59 +441,85 @@ class GUI:
             tkinter.messagebox.showinfo("Illegal Values", "Min value must be lower/ equal to max.",
                                         parent=self.objective_val_window)
 
-    def cb_query_min_edges(self):
-        if self.query_min_edges.get() == 1:
-            self.t_min_edges_between.config(state='normal')
-        else:
-            self.t_min_edges_between.config(state='readonly')
+    def rb_query_min_edges(self):
+        self.t_min_edges_between.config(state='normal')
+        self.t_min_paths_between.config(state='readonly')
+        self.t_queries_num.config(state='readonly')
 
-    def cb_query_min_paths(self):
-        if self.query_min_paths.get() == 1:
-            self.t_min_paths_between.config(state='normal')
-        else:
-            self.t_min_paths_between.config(state='readonly')
+    def rb_query_min_paths(self):
+        self.t_min_paths_between.config(state='normal')
+        self.t_min_edges_between.config(state='readonly')
+        self.t_queries_num.config(state='readonly')
 
-    def cb_query_number(self):
-        if self.query_rnd.get() == 1:
-            self.t_queries_num.config(state='normal')
-        else:
-            self.t_queries_num.config(state='readonly')
+    def rb_query_number(self):
+        self.t_queries_num.config(state='normal')
+        self.t_min_paths_between.config(state='readonly')
+        self.t_min_edges_between.config(state='readonly')
+
+    def rb_query_all_pairs(self):
+        self.t_queries_num.config(state='readonly')
+        self.t_min_paths_between.config(state='readonly')
+        self.t_min_edges_between.config(state='readonly')
 
     def validate_queries(self):
-        queries_num, min_edges = 0, 0
         valid = True
-        if self.selected_queries[0] == 1:  # random
+        if self.query_method.get() == 1:  # random
             if self.t_queries_num.get() != '':
                 queries_num = int(self.t_queries_num.get())
                 if queries_num <= 0:
                     valid = False
+                else:  # valid number
+                    self.queries_param = queries_num
             else:
                 valid = False
-        if self.selected_queries[3] == 1:  # min edges between source & target
+        if self.query_method.get() == 2:  # min edges between source & target #3 min paths, 0 all pairs
             if self.t_min_edges_between.get() != '':
                 min_edges = int(self.t_min_edges_between.get())
                 if min_edges <= 0:
                     valid = False
+                else:  # valid number
+                    self.queries_param = min_edges
+            else:
+                valid = False
+        if self.query_method.get() == 3:  # min paths between source & target
+            if self.t_min_edges_between.get() != '':
+                min_paths = int(self.t_min_edges_between.get())
+                if min_paths <= 0:
+                    valid = False
+                else:  # valid number
+                    self.queries_param = min_paths
             else:
                 valid = False
         if not valid:
-            tkinter.messagebox.showinfo("Missing parameters", "Missing queries number or min edges between source and "
-                                                              "target.")
-        else:
-            self.selected_queries[1] = queries_num
-            self.selected_queries[4] = min_edges
+            tkinter.messagebox.showinfo(MSG_TITLE_MISSING_PARAMS, "Missing queries number or min edges between source "
+                                                                  "and target.")
         return valid
 
     def generate_queries(self):
-        global dest_directory
-        self.selected_queries = [self.query_rnd.get(), -1, self.query_all.get(), self.query_min_edges.get(), -1,
-                                 self.query_min_paths.get(), -1]
         if self.validate_queries():
-            print("[DEBUG] Generating queries...")
-            adapter.generate_queries(self.vertices, self.edges_generated, self.selected_queries, dest_directory)
+            files = [('All Files', '*.*')]
+            file_name = fd.asksaveasfile(filetypes=files)
+            if file_name:
+                file_path = os.path.normpath(file_name.name)
+                print("[DEBUG] Generating queries...")
+                adapter.generate_queries(self.vertices, self.edges_generated, self.query_method.get(),
+                                         self.queries_param, file_path)
 
     def create_gif(self):
-        return
+        dir = fd.askdirectory()
+        if dir:
+            grid_view.create_gif(dir)
+
+    def save_graph_to(self):
+        global dest_directory
+
+        files = [('gr files', '*.gr'),
+                 ('All Files', '*.*')]
+        file_path = fd.asksaveasfile(filetypes=files)
+        dest_directory = file_path
+        self.generate_graph()
+        # Need to change implementation in adapter.py: take 'dest_directory' as full path including file name,
+        # remove file name from implemented methods and send different name for each objective.
 
     def generate_graph(self):
         global dest_directory
@@ -487,7 +527,7 @@ class GUI:
         if self.edges_gen_methods.get() == methods_options[4]:  # Grid
             if self.validate_input_grid():
                 if not self.valid_grid_values:
-                    tkinter.messagebox.showinfo(title='Missing parameters', message='Missing some grid params.')
+                    tkinter.messagebox.showinfo(MSG_TITLE_MISSING_PARAMS, message='Missing some grid params.')
                     return
                 else:
                     if self.grid_params.get_grid_dim() == 2:
@@ -545,7 +585,7 @@ class GUI:
     def validate_input_graphs(self):
         if self.validate_vertices() and self.validate_coordinates():
             if not self.validate_params_edges_gen_method():
-                tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
+                tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Invalid parameters for edges generation method.")
                 return False
             else:
                 return True
@@ -554,7 +594,7 @@ class GUI:
 
     def validate_input_grid(self):
         if not self.validate_params_edges_gen_method():
-            tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters for edges generation method.")
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Invalid parameters for edges generation method.")
             return False
         else:
             return True
@@ -575,14 +615,13 @@ class GUI:
         try:
             self.vertices = int(self.t_vertices.get())
         except:
-            tkinter.messagebox.showinfo("Invalid Input", "Please insert a valid number of vertices.")
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Please insert a valid number of vertices.")
+            return False
+        if self.vertices <= 0:
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Please insert a valid number of vertices.")
             return False
         else:
-            if self.vertices <= 0:
-                tkinter.messagebox.showinfo("Invalid Input", "Please insert a valid number of vertices.")
-                return False
-            else:
-                return True
+            return True
 
     def validate_params_edges_gen_method(self):
         if self.edges_gen_methods.get() == methods_options[0]:  # Fully Random - number/ percentage
@@ -622,6 +661,8 @@ class GUI:
                     return False
             except:
                 return False
+        else:  # Fully Connected Dense Graph - no params
+            return True
 
     def get_fully_random_params(self):
         try:
@@ -632,7 +673,7 @@ class GUI:
                 self.edges_percentage = True
             self.edges_method_window.destroy()
         except:
-            tkinter.messagebox.showinfo(title='Missing parameters',
+            tkinter.messagebox.showinfo(title=MSG_TITLE_MISSING_PARAMS,
                                         message='Please make sure all fields are not empty.',
                                         parent=self.edges_method_window)
 
@@ -642,7 +683,7 @@ class GUI:
                 self.edges_number_connected = int(self.t_add_edges_to_mst.get())
             self.edges_method_window.destroy()
         except:
-            tkinter.messagebox.showinfo(title='Missing parameters',
+            tkinter.messagebox.showinfo(title=MSG_TITLE_MISSING_PARAMS,
                                         message='Please make sure all fields are not empty.',
                                         parent=self.edges_method_window)
 
@@ -653,7 +694,7 @@ class GUI:
             self.edges_flow_paths = int(self.t_edge_paths_num.get())
             self.edges_method_window.destroy()
         except:
-            tkinter.messagebox.showinfo(title='Missing parameters',
+            tkinter.messagebox.showinfo(title=MSG_TITLE_MISSING_PARAMS,
                                         message='Please make sure all fields are not empty.',
                                         parent=self.edges_method_window)
 
@@ -669,67 +710,95 @@ class GUI:
                         self.edges_number_bipartite = int(self.t_edges_between_groups.get())
                     self.edges_method_window.destroy()
                 else:
-                    tkinter.messagebox.showinfo(title='Missing parameters',
+                    tkinter.messagebox.showinfo(title=MSG_TITLE_MISSING_PARAMS,
                                                 message='Please make sure all fields are not empty.',
                                                 parent=self.edges_method_window)
             except:
-                tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters.", parent=self.edges_method_window)
+                tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Invalid parameters.",
+                                            parent=self.edges_method_window)
         else:
-            tkinter.messagebox.showinfo("Invalid Input", "Invalid parameters.", parent=self.edges_method_window)
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "Invalid parameters.", parent=self.edges_method_window)
 
     def get_next_img(self):
         self.b_prev_img.config(state='normal')
         self.img_index += 1
-        self.display_grid(self.img_index)
+        self.display_grid(self.json_dict, self.img_index)
 
     def get_prev_img(self):
         self.b_next_img.config(state='normal')
-        if self.img_index == 1:
+        if self.img_index == 2:  # indexes start from 1
             self.b_prev_img.config(state='disabled')
         self.img_index -= 1
-        self.display_grid(self.img_index)
+        self.display_grid(self.json_dict, self.img_index)
         return
 
-    def disable_all(self):
-        self.b_generate.config(state='disabled')
-        self.b_generate_queries.config(state='disabled')
-        self.om_edges_methods.config(state='disabled')
-        self.om_edges_weights.config(state='disabled')
+    def get_img_by_index(self):
+        if self.t_img_goto.get() != '':
+            index = int(self.t_img_goto.get())
+            self.display_grid(self.json_dict, index)
+            return
+        else:
+            tkinter.messagebox.showinfo("Missing Params", "Please insert a valid index to show.")
 
-    def display_grid(self, index):
-        json_dict = read_write_io.read_json()
-        if json_dict.__contains__(str(index)):
-            fig = grid_view.get_graph_image_by_index(json_dict, str(index))
+    def load_new_json(self):
+        filetypes = (
+            ('json files', '*.json'),
+            ('All files', '*.*')
+        )
+        path_str = fd.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+        self.json_dict = adapter.get_input_graphs(os.path.normpath(path_str))
+        self.display_grid(self.json_dict, 1)
 
+    def disable_all_no_objectives(self):
+        self.edges_weights_method.set(weights_options_graphs[3])
+        self.om_edges_weights['menu'].entryconfigure(weights_options_graphs[0], state='disabled')
+        self.om_edges_weights['menu'].entryconfigure(weights_options_graphs[1], state='disabled')
+        self.om_edges_weights['menu'].entryconfigure(weights_options_graphs[2], state='disabled')
+        self.rb_obj_set_values.config(state='disabled')
+        self.rb_obj_default.config(state='disabled')
+
+    def display_grid(self, json_dict, index, file_name=None):
+        global dest_directory
+        if index == -1:
+            fig = grid_view.get_single_graph_image(json_dict, file_name, dest_directory)
+        else:
+            if json_dict.__contains__(str(index)):
+                fig = grid_view.get_graph_image_by_index(json_dict, str(index), dest_directory)
+            else:
+                fig = Figure(figsize=(5, 4), dpi=100)
+        if fig:
             canvas = FigureCanvasTkAgg(fig, master=self.root)  # A tk.DrawingArea.
             canvas.draw()
 
-            toolbar = NavigationToolbar2Tk(canvas, self.root, pack_toolbar=False)
+            self.toolbar = CustomToolbar(canvas, self.root, self)
 
-            toolbar.update()
+            self.toolbar.update()
             canvas.mpl_connect("key_press_event", lambda event: print(f"you pressed {event.key}"))
             canvas.mpl_connect("key_press_event", key_press_handler)
 
-            canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18, columnspan=2)
-            toolbar.grid(row=18, column=3, columnspan=2, pady=2, padx=4)
+            canvas.get_tk_widget().grid(row=0, column=3, pady=2, padx=4, rowspan=18, columnspan=4)
+            self.toolbar.grid(row=18, column=3, columnspan=4, pady=2, padx=4)
             if not json_dict.__contains__(str(index + 1)):
-                self.b_next_img.config('disabled')
+                self.b_next_img.config(state='disabled')
+            else:
+                self.b_next_img.config(state='normal')
+        else:
+            tkinter.messagebox.showinfo(MSG_TITLE_INVALID_INPUT, "No such graph.")
 
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("890x570")  # (width, height)
+        self.root.geometry("890x595")  # (width, height)
         # self.root.resizable(False, False)
 
         # Variables
-        self.objectives = read_write_io.read_config()
+        self.objectives = adapter.get_objectives()
         self.edges_number_full_random, self.edges_percentage_full_random, self.edges_number_connected, \
         self.edges_flow_src, self.edges_flow_dst, self.edges_flow_paths, self.edges_bipartite1, \
         self.edges_bipartite2, self.edges_bipartite_txt, self.edges_number_bipartite, self.vertices = 0, 0, 0, 0, \
                                                                                                       0, 0, 0, 0, \
                                                                                                       0, 0, 0
         self.edges_percentage = False
-        self.selected_queries = [0, 0, 0, 0, 0]
         self.long = LONG
         self.long_diff = COOR_DIFF
         self.lat = LAT
@@ -740,9 +809,12 @@ class GUI:
         self.valid_grid_values = False
         self.grid_params = grid_params.Grid()
         self.img_index = 1
+        self.queries_param = -1
+        self.json_dict = adapter.get_input_graphs()
 
-        modify_toolitems()
-        self.display_grid(self.img_index)
+        self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
+
+        self.display_grid(self.json_dict, self.img_index)
 
         Label(root, text="Vertices #").grid(row=row_index, column=0, pady=4, sticky=W)
 
@@ -857,43 +929,41 @@ class GUI:
 
         Label(root, text="Queries Generation Method").grid(row=row_index, column=0, sticky=NW, rowspan=4, pady=3)
 
-        self.query_rnd = IntVar()
-        self.cb_query_rnd = Checkbutton(root, text="Random (#)", onvalue=1, offvalue=0, variable=self.query_rnd,
-                                        command=self.cb_query_number)
-        self.cb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+        self.query_method = IntVar()
+        self.rb_query_all_pairs = Radiobutton(root, text="All Pairs", value=0, variable=self.query_method,
+                                              command=self.rb_query_all_pairs)
+        self.rb_query_all_pairs.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
+
+        inc_row()
+
+        self.rb_query_rnd = Radiobutton(root, text="Random (#)", value=1, variable=self.query_method,
+                                        command=self.rb_query_number)
+        self.rb_query_rnd.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
 
         self.t_queries_num = Prox(root, width=10, state='readonly')
         self.t_queries_num.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
-        self.query_all = IntVar()
-        self.cb_query_all_pairs = Checkbutton(root, text="All Pairs", onvalue=1, offvalue=0, variable=self.query_all)
-        self.cb_query_all_pairs.grid(row=row_index, column=1, padx=8, sticky=W, columnspan=2)
-
-        inc_row()
-
-        self.query_min_edges = IntVar()
-        self.cb_query_min_edges = Checkbutton(root, text="Min Edges:", onvalue=1, offvalue=0,
-                                              variable=self.query_min_edges, command=self.cb_query_min_edges)
-        self.cb_query_min_edges.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.rb_query_min_edges = Radiobutton(root, text="Min Edges:", value=2, variable=self.query_method,
+                                              command=self.rb_query_min_edges)
+        self.rb_query_min_edges.grid(row=row_index, column=1, padx=8, sticky=W)
 
         self.t_min_edges_between = Prox(root, width=10, state='readonly')
         self.t_min_edges_between.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
-        self.query_min_paths = IntVar()
-        self.cb_query_min_paths = Checkbutton(root, text="Min Paths:", onvalue=1, offvalue=0,
-                                              variable=self.query_min_paths, command=self.cb_query_min_paths)
-        self.cb_query_min_paths.grid(row=row_index, column=1, padx=8, sticky=W)
+        self.rb_query_min_paths = Radiobutton(root, text="Min Paths:", value=3, variable=self.query_method,
+                                              command=self.rb_query_min_paths)
+        self.rb_query_min_paths.grid(row=row_index, column=1, padx=8, sticky=W)
 
         self.t_min_paths_between = Prox(root, width=10, state='readonly')
         self.t_min_paths_between.grid(row=row_index, column=2, padx=8, sticky=W)
 
         inc_row()
 
-        self.b_generate_queries = Button(root, text="Generate Queries", width=27, command=self.generate_queries)
+        self.b_generate_queries = Button(root, text="Generate Query", width=27, command=self.generate_queries)
         self.b_generate_queries.grid(row=row_index, column=1, padx=8, pady=2, columnspan=2)
 
         inc_row()
@@ -902,7 +972,6 @@ class GUI:
 
         inc_row()
 
-        # Buttons
         self.b_clear = Button(root, text="Clear Form", command=self.clear, width=9)
         self.b_clear.grid(row=row_index, column=0, padx=8, pady=2, sticky=W)
 
@@ -917,10 +986,23 @@ class GUI:
         self.b_clear.grid(row=row_index, column=2, padx=8, pady=2, sticky=E)
 
         self.b_prev_img = Button(root, text="Prev", command=self.get_prev_img, width=10, state='disabled')
-        self.b_prev_img.grid(row=row_index, column=3, padx=8, pady=2, sticky=E)
+        self.b_prev_img.grid(row=row_index, column=4, padx=8, pady=2, sticky=E)
 
-        self.b_next_img = Button(root, text="Next", command=self.get_next_img, width=10)
-        self.b_next_img.grid(row=row_index, column=4, padx=8, pady=2, sticky=W)
+        self.b_next_img.grid(row=row_index, column=5, padx=8, pady=2, sticky=W)
+
+        inc_row()
+
+        self.b_save_graph = Button(root, text="Save Graph", command=self.save_graph_to, width=10, state='disabled')
+        self.b_save_graph.grid(row=row_index, column=0, padx=8, pady=2, sticky=W)
+
+        self.b_img_goto = Button(root, text="Go To:", command=self.get_img_by_index, width=7)
+        self.b_img_goto.grid(row=row_index, column=3, padx=2, pady=2, sticky=E)
+
+        self.t_img_goto = Prox(root, width=6)
+        self.t_img_goto.grid(row=row_index, column=4, padx=2, sticky=W)
+
+        self.b_load_json = Button(root, text="Load File", command=self.load_new_json, width=10)
+        self.b_load_json.grid(row=row_index, column=6, columnspan=2, padx=6, pady=2, sticky=E)
 
         inc_row()
 
@@ -928,13 +1010,11 @@ class GUI:
                                  fg='white')
         self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
 
-        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14, state='disabled')
-        self.b_generate.grid(row=row_index, column=4, columnspan=2, padx=8, pady=2, sticky=E)
-
-        inc_row()
+        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14)
+        self.b_generate.grid(row=row_index, column=6, columnspan=2, padx=6, pady=2, sticky=E)
 
         # Objectives validation
         if len(self.objectives) == 0:
             tkinter.messagebox.showinfo("Read config failed", "Could not read objectives file, please check it and "
                                                               "re-run the program.")
-            self.disable_all()
+            self.disable_all_no_objectives()

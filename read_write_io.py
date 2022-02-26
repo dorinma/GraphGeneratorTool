@@ -4,7 +4,7 @@
 import os
 import json
 
-dir = os.getcwd() + "\\resources\\"
+resources_dir = os.getcwd() + "\\resources\\"
 FILE_NAME_CONFIG = "config.txt"
 FILE_NAME_INPUT = "input.json"
 
@@ -13,8 +13,7 @@ def read_config():
     objectives = {}
 
     try:
-        file = open(dir + FILE_NAME_CONFIG, 'r')
-
+        file = open(resources_dir + FILE_NAME_CONFIG, 'r')
         for line in file:
             line_str = line.split('\t')
             objectives[line_str[0]] = (int(line_str[1]), int(line_str[2].removesuffix("\n")))
@@ -55,9 +54,24 @@ def write_to_file_query(full_path, edges):
         print("[ERROR] Could not write query file.")
 
 
-def read_json():
+def read_json(path):
     try:
-        with open(dir + FILE_NAME_INPUT, 'r') as f:
+        if path:
+            with open(path, 'r') as f:
+                data = json.load(f)
+            return data
+        else:
+            with open(resources_dir + FILE_NAME_INPUT, 'r') as f:
+                data = json.load(f)
+            return data
+    except:
+        print("[ERROR] Could not read input file.")
+        return ""
+
+
+def read_single_state(path):
+    try:
+        with open(path, 'r') as f:
             data = json.load(f)
         return data
     except:

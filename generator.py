@@ -51,6 +51,8 @@ class EdgeWithValue:
 
 
 def fully_random(num_vertices, num_edges):
+    if num_edges > num_vertices * (num_vertices - 1):
+        num_edges = num_vertices * (num_vertices - 1)
     edges = set()
     bias = fractions.Fraction(num_edges, num_vertices * (num_vertices - 1))
     while len(edges) != num_edges:
@@ -79,6 +81,8 @@ def fully_connected(num_vertices, num_edges=None):
     num_of_edges = len(edges)
     if num_edges is not None:
         bias = fractions.Fraction(num_edges, num_vertices * num_vertices - 1)
+        if num_edges + num_of_edges > num_vertices * (num_vertices - 1):
+            num_edges = num_vertices * (num_vertices - 1) - num_of_edges
         while len(edges) != num_edges + num_of_edges:
             for i in range(1, num_vertices + 1):
                 for j in range(1, num_vertices + 1):
@@ -121,7 +125,11 @@ def bipartite(num_vertices, num_edges, group_a, group_b):
             group_b_ver.append(v)
     edges = set()
     while len(edges) != num_edges:
-        edges.add(Edge(group_a_ver[random.randint(0, group_a)], group_b_ver[random.randint(0, group_b)]))
+        bias = fractions.Fraction(1, 2)
+        if random.random() < bias:
+            edges.add(Edge(group_a_ver[random.randint(0, group_a)], group_b_ver[random.randint(0, group_b)]))
+        else:
+            edges.add(Edge(group_b_ver[random.randint(0, group_b)], group_a_ver[random.randint(0, group_a)]))
     return edges
 
 
@@ -314,10 +322,11 @@ def all_paths_source_target(neighbors, s, g):
         cur_node, cur_path = q.popleft()
         if cur_node == g:
             ans.append(cur_path)
-        nexts = neighbors[cur_node]
-        for nextNode in nexts:
-            if nextNode not in cur_path:
-                q.append((nextNode, cur_path + [nextNode]))
+        elif cur_node in neighbors:
+            nexts = neighbors[cur_node]
+            for nextNode in nexts:
+                if nextNode not in cur_path:
+                    q.append((nextNode, cur_path + [nextNode]))
     return ans
 
 
