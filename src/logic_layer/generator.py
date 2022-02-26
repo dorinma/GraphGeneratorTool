@@ -185,10 +185,16 @@ def weights_to_edges_coordinate(edges, v_coor_list):
     return weighted_edges
 
 
-def query_random(num_vertices, num_pairs):
+def query_random(num_vertices, num_pairs , bidirected):
     query = set()
+    if bidirected and num_pairs > math.factorial(num_vertices -1):
+        num_pairs = math.factorial(num_vertices - 1)
+    elif num_pairs > num_vertices * (num_vertices -1):
+        num_pairs = num_vertices * (num_vertices -1)
     while len(query) != num_pairs:
         pair = random.sample(range(1, num_vertices + 1), 2)
+        if bidirected and (pair[1], pair[0]) in query:
+            pass
         query.add((pair[0], pair[1]))
     return query
 

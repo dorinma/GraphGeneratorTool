@@ -39,7 +39,7 @@ def get_single_graph_image(dict_, file_name, dest_directory):
 def create_gif(dir):
     files = glob(os.path.join(dir, '*.png'))
     import imageio
-    out_path = os.getcwd() + "\\out\\" + "out_gif.gif"
+    out_path = os.path.dirname(os.getcwd()) + "\\out\\" +  "out_gif.gif"
     with imageio.get_writer(out_path, mode='I', duration=0.5) as writer:
         for filename in files:
             image = imageio.imread(filename)

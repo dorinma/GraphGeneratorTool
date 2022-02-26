@@ -1,0 +1,25 @@
+c	Created in graph generator tool by Shahar Bardugo & Dorin Matzrafi
+c
+p	sp 20 20
+c	graph contains 20 nodes and 20 arcs
+c
+a	1	2	22
+a	6	2	381
+a	4	8	456
+a	1	13	0
+a	14	2	64
+a	9	8	962
+a	8	10	99
+a	1	18	220
+a	3	16	989
+a	8	11	772
+a	14	3	419
+a	14	4	44
+a	13	11	413
+a	17	5	767
+a	16	9	482
+a	17	12	557
+a	14	15	853
+a	15	14	82
+a	11	20	94
+a	17	16	385

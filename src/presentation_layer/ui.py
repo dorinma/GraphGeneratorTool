@@ -485,8 +485,8 @@ class GUI:
             else:
                 valid = False
         if self.query_method.get() == 3:  # min paths between source & target
-            if self.t_min_edges_between.get() != '':
-                min_paths = int(self.t_min_edges_between.get())
+            if self.t_min_paths_between.get() != '':
+                min_paths = int(self.t_min_paths_between.get())
                 if min_paths <= 0:
                     valid = False
                 else:  # valid number
