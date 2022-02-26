@@ -1,21 +1,21 @@
 # Graph Generator Tool
 This tool generates graphs and writes them to three kinds of files: .gr, .co and queries.
-
 The user can choose the method to create and weight the edges. Each method will be explained below, along with the parametes needed for it.
+The costs of the edges can be determined by number of objectives, defined in a configuration file. The program does not support non-positive values.
 
-The costs of the edges can be defined by number of objectives, defined in a configuration file. The program does not support non-positive values.
+This tool also allows displaying graphs represented in a file described below, more on this under 'Graphs Display'.
 
 For the program to run successfully, there must be a non-empty file in the resources directory: config.txt. There is also an input.json file in the same directory, used for displaying graphs on the screen. This file may be empty but in this case no graph will be shown.
 
 ### config.txt
-This file must contain at least one record (line). Each line describes an objective, and must contain a name (could be anything) and minimal and maximal value for this objective (must be non-negative numbers). The fields are seperated by a tab. Example for such file:
+This file must contain at least one record (line). Each line describes an objective, and will contain a name (could be anything) and minimal and maximal values for this objective (non-negative numbers). The fields are seperated by a tab. Example for such file:
 ```yaml
 Time	0	20
 Cost	0	200
 ```
 
 ### input.json
-This file is the source of the graphs displayed on the screen. It describes the states during the run of a search algorithm over a graph, and it is written as follows, where "1" is the index of the state, "Open" are the vertices in the open list, "Exp" is the next vertex to expand and "Children" are the neighbors of the Exp vertex.
+This file is the source of the graphs displayed on the screen. It describes the states during the run of a search algorithm over a graph, and it is written as follows, where "1" is the index of the state, "Open" are the vertices in the open list, "Exp" is the next vertex to expand and "Children" are the neighbors of the Exp vertex. The indexes must start from "1".
 ```yaml
 {
   "1": {
@@ -31,7 +31,9 @@ This file is the source of the graphs displayed on the screen. It describes the 
 }
 ```
 
-# Files Generated:
+# Graphs Generation:
+
+## Files Generated:
 
 ## .gr file
 A .gr file represents the edges of the graph. Each row is an edge contains two vertices and the edge's weight by the specified objective.
@@ -72,37 +74,40 @@ vertices will get a higher weight.
 
 ## .co file
 
-The second file is co, represent the vertices. Each row is a vertex - index of the vertex and it's coordinates (2 or 3). 
+The second file generated is a .co file, representing the vertices. Each row describes a vertex: its index and coordinates (2 or 3). 
 
-The user can choose the method to create the coordinates. Each method will be explained below, along with the parametes needed for it.
+### Coordinates generation methods:
 
-1. Randomly - the default is NY coordinates - long , lat , alt written on the screen and also default values for the possible distance differnece.
+1. Randomly - the default coordinated shown are N.Y. coordinates (longitude, latitude and altitude), and the values for the possible distance differnece from them.
 
-   The user can change both kind of valus. Each vertices will get a coordinates randomly in this range. 
-
-   The user can insert alt - 0 and alt diff - 0 if he want just the long and lat. 
+   The user can change both kinds of valus, and each vertex will get coordinates randomly within this range. 
    
-2. By Index - the values the same as describe above. Each vertices will get a coordinates in this range but close vertices in the index will be closer 
-
-   at the coordinates. The user can insert alt - 0 and alt diff - 0 if he want just the long and lat.   
+   If only two coordinates are needed, one can insert 0 for the alt & alt diff fields.
    
-3. This option is in the grid case, the coordinates file is according to the x, y, z.   
+2. By Index - the values are the same as describe above. Each vertex will get coordinates in this range, when in this case close vertices (by index) will get closer 
+
+   coordinates. 
+   
+3. For the grid case, the coordinates file will be according to the x, y, z.   
 
 ## query file
 
-The third file is query file but is have no type. Each row is a pair of two vertices - source and target. 
+The third file generated is query (with no type). Each row represents a pair of vertices- source and target. 
 
-The user can choose the method to create this pairs. Each method will be explained below, along with the parametes needed for it.
+### Queries generation methods:
 
-1. All Pair - all combinations of two vertices. 
+1. All Pairs - all combinations of every two vertices in the graph. 
 
-2. Random - The user insert number of pairs and get this number of pairs choosen randomly. 
+2. Random - insert number of pairs and get this number of pairs choosen randomly. 
 
-3. Min Edges - The user insert the number of min edges - thats mean that only pairs of vertices that contains path with at least this number of edges in 
-
-   this path will insert to the file. 
+3. Min Edges - insert the number of mininal edges between source & target vertices. The pairs generated will be pairs of vertices that have paths with at least this number of edges between them. 
    
-4. Min Paths - The user insert the number of min paths - thats mean that only pairs of vertices that contains at least this number of possible paths will
+4. Min Paths - insert the number of minimal paths between source & target vertices. The pairs generated will be pairs of vertices that have at least this number of paths between them. 
 
-   insert to the file. 
+
+# Graphs Display:
+
+On the right side of the screen there is a canves containing graph visualisation of graphs generated from input.json file (was mentioned above). When running, the program will read the .json file from the 'config' folder and display the first graph described there. There are options to navigate graphs within this file. 
+
+Also, there are possibilities to display another single graph or to read an entire .json file and navigate graphs within this new file. Each graph that is displayed on the screen will also be saved as a .png image to the 'out' folder under its name (index/ file name if single graph). Later on, the user can create a gif of these images: he will choose a directory and the program will create gif from all images (of type .png) in this directory by their order of appearance. The gif will also be saved in the 'out' folder.
 
