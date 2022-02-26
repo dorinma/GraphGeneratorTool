@@ -657,6 +657,8 @@ class GUI:
                     return False
             except:
                 return False
+        else:   # Fully Connected Dense Graph - no params
+            return True
 
     def get_fully_random_params(self):
         try:
@@ -734,6 +736,9 @@ class GUI:
         else:
             tkinter.messagebox.showinfo("Missing Params", "Please insert a valid index to show.")
 
+    def load_new_json(self):
+        return
+
     def disable_all_no_objectives(self):
         self.edges_weights_method.set(weights_options_graphs[3])
         self.om_edges_weights['menu'].entryconfigure(weights_options_graphs[0], state='disabled')
@@ -767,7 +772,7 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Graph Generator")
-        self.root.geometry("890x570")  # (width, height)
+        self.root.geometry("890x600")  # (width, height)
         # self.root.resizable(False, False)
 
         # Variables
@@ -972,20 +977,23 @@ class GUI:
         self.b_save_graph = Button(root, text="Save Graph", command=self.save_graph_to, width=10, state='disabled')
         self.b_save_graph.grid(row=row_index, column=0, padx=8, pady=2, sticky=W)
 
-        self.b_generate = Button(root, text="Generate graph", command=self.generate_graph, width=16, bg='black',
-                                 fg='white')
-        self.b_generate.grid(row=row_index, column=1, columnspan=2, padx=8, pady=2, sticky=W)
-
         self.b_img_goto = Button(root, text="Go To:", command=self.get_img_by_index, width=7)
         self.b_img_goto.grid(row=row_index, column=3, padx=2, pady=2, sticky=E)
 
         self.t_img_goto = Prox(root, width=6)
         self.t_img_goto.grid(row=row_index, column=4, padx=2, sticky=W)
 
-        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14, state='disabled')
-        self.b_generate.grid(row=row_index, column=6, columnspan=2, padx=8, pady=2, sticky=E)
+        self.b_load_json = Button(root, text="Load File", command=self.load_new_json, width=10)
+        self.b_load_json.grid(row=row_index, column=6, columnspan=2, padx=6, pady=2, sticky=E)
 
         inc_row()
+
+        self.b_generate = Button(root, text="Generate graph", command=self.generate_graph, width=16, bg='black',
+                                 fg='white')
+        self.b_generate.grid(row=row_index, column=0, columnspan=3, padx=8, pady=2)
+
+        self.b_generate = Button(root, text="Create gif", command=self.create_gif, width=14, state='disabled')
+        self.b_generate.grid(row=row_index, column=6, columnspan=2, padx=6, pady=2, sticky=E)
 
         # Objectives validation
         if len(self.objectives) == 0:
