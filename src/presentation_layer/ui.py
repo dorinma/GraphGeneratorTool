@@ -22,7 +22,9 @@ methods_options = ('Fully Random', 'Fully Connected Dense Graph', 'Fully Connect
 weights_options_graphs = ('Fully Random', 'Planar', 'Predefined Calculation', 'By Coordinates')
 # weights_options_grid = ('By axis (1)', 'Random')
 # queries_options = ('All Pairs', 'Random', 'Minimal Edges', 'Minimal Paths')
-source_directory, dest_directory = os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
+source_directory, dest_directory = os.path.dirname(os.getcwd()) + "\\GraphGeneratorTool\\out\\", \
+                                   os.path.dirname(os.getcwd()) + "\\GraphGeneratorTool\\out\\"
+# os.getcwd() + "\\out\\", os.getcwd() + "\\out\\"
 row_index = 0
 LONG = -74005973
 LAT = 40712775

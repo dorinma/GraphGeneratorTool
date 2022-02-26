@@ -4,7 +4,7 @@
 import os
 import json
 
-resources_dir = os.getcwd() + "\\resources\\"
+resources_dir = os.path.dirname(os.getcwd()) + "\\GraphGeneratorTool\\resources\\"
 FILE_NAME_CONFIG = "config.txt"
 FILE_NAME_INPUT = "input.json"
 
